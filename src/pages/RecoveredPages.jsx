@@ -161,7 +161,7 @@ export function DoctorRdPage() {
       <section style={{ paddingTop: 0 }}>
         <div className="wrap doctor-profile">
           <div className="doctor-photo reveal"><img src={IMG.doctorSenior} alt="Dr. R. D. Mukhija" /></div>
-          <div>
+          <div className="doctor-profile-copy">
             <p>
               Dr. R. D. Mukhija completed his MD under the supervision of late Prof. K. S. Kandhari,
               late Prof. L. K. Bhutani and Dr. J. S. Pasricha. He joined as a lecturer in Jhansi in
@@ -210,7 +210,7 @@ export function DoctorGauravPage() {
       <section style={{ paddingTop: 0 }}>
         <div className="wrap doctor-profile">
           <div className="doctor-photo reveal"><img src={IMG.doctorGaurav} alt="Dr. Gaurav Mukhija" /></div>
-          <div>
+          <div className="doctor-profile-copy">
             <p>
               Dr. Gaurav Mukhija leads day-to-day clinical and cosmetic dermatology at the clinic.
               His work covers diagnosis and management of skin, hair and nail conditions, along with

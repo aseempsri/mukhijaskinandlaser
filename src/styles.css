@@ -313,8 +313,28 @@ section { padding: 96px 0; }
   .hero-frame { height: 390px; }
 }
 
-.doctor-profile { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 42px; align-items: start; }
-.doctor-profile .doctor-photo { min-height: 480px; overflow: hidden; border-radius: 4px; }
+.doctor-profile { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 42px; align-items: stretch; }
+.doctor-profile .doctor-photo {
+  min-height: 480px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.doctor-profile .doctor-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.doctor-profile-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 18px;
+  min-height: 100%;
+}
+.doctor-profile-copy > * { margin: 0; }
+.doctor-profile-copy .btn { align-self: flex-start; }
 .content-grid { display: grid; grid-template-columns: 1.4fr 0.8fr; gap: 36px; align-items: start; }
 .content-hero-img { height: 360px; margin-bottom: 28px; border-radius: 4px; object-fit: cover; }
 .side-card { padding: 28px; border: 1px solid var(--line); background: rgba(255,255,255,.55); }
@@ -368,6 +388,10 @@ section { padding: 96px 0; }
   .case-pair > div { height: 330px; }
   .form-grid { grid-template-columns: 1fr; }
   .doctor-profile .doctor-photo { min-height: 360px; }
+  .doctor-profile-copy {
+    justify-content: flex-start;
+    gap: 16px;
+  }
 }
 
 @media (max-width: 500px) {
