@@ -20,6 +20,17 @@ It keeps original `.html` and pretty directory URLs in `dist`, includes sitemap 
 robots / redirect files, page-specific SEO metadata, responsive navigation, treatment
 filters, reveal effects, before/after interaction, and a frontend appointment stepper.
 Marketing tone is kept measured; no medical claims were invented beyond legacy facts.
+
+## GitHub Pages deploy
+
+Pushes to `main` trigger `.github/workflows/deploy-pages.yml`, which builds the Vite
+app and deploys the `dist` folder to GitHub Pages. Production assets use the base path
+`/mukhijaskinandlaser/` so logo and CSS resolve at:
+
+`https://aseempsri.github.io/mukhijaskinandlaser/`
+
+One-time repo setting: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
 The historical prototype notes follow below.
 
 # Historical Prototype Notes
