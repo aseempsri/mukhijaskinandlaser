@@ -77,11 +77,11 @@ pages_more.py` to rebuild everything from source.
 
 ## What's placeholder and must be replaced before launch
 
-- **All photography** is stock (Unsplash) purely to show composition/cropping —
-  replace with the clinic's real logo, doctor portraits, clinic interior, equipment,
-  and **clinic-approved** before/after photography (Section 32 of the brief).
-- **Before/after images** use the same stock photo for both sides of the slider —
-  it's there to demonstrate the drag-to-compare interaction only, not real results.
+- Doctor portraits and acne, mole-removal and vitiligo result photographs are
+  clinic-supplied assets. Remaining general treatment photography is self-hosted
+  stock imagery from Unsplash's free license tier.
+- Patient result photography is presented without names or supplied identifiers and
+  with an individual-results disclaimer.
 - **Testimonials** are the two real Google reviews quoted on the current homepage;
   no testimonials were invented.
 - **The appointment form** is frontend-only (see the note printed to the browser

@@ -3,36 +3,73 @@ import { assetUrl, withBase } from "../paths";
 
 const IMG = {
   clinic: assetUrl("images/clinic-interior.jpg"),
-  doctorSenior: assetUrl("images/doctor-rd-mukhija.jpg"),
-  doctorGaurav: assetUrl("images/doctor-gaurav-mukhija.jpg"),
+  doctorSenior: assetUrl("images/doctor-rd-mukhija.webp"),
+  doctorGaurav: assetUrl("images/doctor-gaurav-mukhija.webp"),
   acne: assetUrl("images/acne-scars.jpg"),
   pores: assetUrl("images/open-pores.jpg"),
 };
 
-const gallery = [
-  { file: "acne-scars.jpg", label: "Acne scar treatment" },
-  { file: "open-pores.jpg", label: "Open pores treatment" },
-  { file: "laser-hair-removal.jpg", label: "Laser hair reduction" },
-  { file: "hair-fall-prp.jpg", label: "PRP therapy for hair" },
-  { file: "pigmentation.jpg", label: "Pigmentation & melasma" },
-  { file: "skin-rejuvenation.jpg", label: "Skin rejuvenation" },
-  { file: "mole-removal.jpg", label: "Mole & skin lesion removal" },
-  { file: "tattoo-removal.jpg", label: "Tattoo removal" },
-];
+const resultAsset = (file) => assetUrl(`images/results/${file}`);
 
-function PageHero({ crumbs, eyebrow, title, lede }) {
+const acneCases = Array.from({ length: 4 }, (_, index) => ({
+  before: `acne-${index + 1}-before.webp`,
+  after: `acne-${index + 1}-after.webp`,
+  label: `Acne treatment case ${index + 1}`,
+}));
+
+const moleCases = Array.from({ length: 3 }, (_, index) => ({
+  before: `mole-${index + 1}-before.webp`,
+  after: `mole-${index + 1}-after.webp`,
+  label: `Mole removal case ${index + 1}`,
+}));
+
+const vitiligoAreas = ["Face", "Face", "Foot", "Eyelid", "Trunk", "Palm", "Face"];
+const vitiligoCases = vitiligoAreas.map((area, index) => ({
+  before: `vitiligo-${index + 1}-before.webp`,
+  after: `vitiligo-${index + 1}-after.webp`,
+  label: `Vitiligo treatment — ${area.toLowerCase()} case`,
+}));
+
+function CaseGallery({ cases, title, intro }) {
+  return (
+    <section className="results-section">
+      <div className="wrap">
+        <div className="section-head">
+          <div className="eyebrow">Real clinic outcomes</div>
+          <h2>{title}</h2>
+          {intro ? <p>{intro}</p> : null}
+        </div>
+        <div className="case-grid">
+          {cases.map((item) => (
+            <figure className="case-card" key={item.before}>
+              <div className="case-pair">
+                <div>
+                  <img src={resultAsset(item.before)} alt={`${item.label} before treatment`} loading="lazy" />
+                  <span>Before</span>
+                </div>
+                <div>
+                  <img src={resultAsset(item.after)} alt={`${item.label} after treatment`} loading="lazy" />
+                  <span>After</span>
+                </div>
+              </div>
+              <figcaption>{item.label}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <p className="disclaimer results-disclaimer">
+          Images supplied by the clinic for this website. Individual results vary with diagnosis,
+          treatment plan, adherence and patient factors. These photographs do not guarantee an
+          identical outcome.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function PageHero({ eyebrow, title, lede }) {
   return (
     <section className="page-hero">
       <div className="wrap">
-        <nav className="breadcrumbs" aria-label="Breadcrumb">
-          <a href={withBase("/")}>Home</a>
-          {crumbs.map((crumb) => (
-            <span key={crumb}>
-              <span>/</span>
-              {crumb}
-            </span>
-          ))}
-        </nav>
         {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
         <h1>{title}</h1>
         {lede ? <p className="lede">{lede}</p> : null}
@@ -62,7 +99,6 @@ export function AboutClinicPage() {
   return (
     <main id="main">
       <PageHero
-        crumbs={["About Clinic"]}
         eyebrow="Our clinic"
         title="A dermatology practice built across two generations"
         lede="Mukhija Skin & Laser Clinic is a recognised dermatology, cosmetic and laser centre on Betiahata Road, Gorakhpur — offering clinical dermatology, laser procedures and dermatosurgery under one roof."
@@ -98,7 +134,8 @@ export function AboutClinicPage() {
 export function DoctorRdPage() {
   return (
     <main id="main">
-      <PageHero crumbs={["Dr. R. D. Mukhija"]} eyebrow="Founder · Senior Dermatologist" title="Dr. R. D. Mukhija" />
+      <PageHero
+        eyebrow="Founder · Senior Dermatologist" title="Dr. R. D. Mukhija" />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap doctor-profile">
           <div className="doctor-photo reveal"><img src={IMG.doctorSenior} alt="Dr. R. D. Mukhija" /></div>
@@ -126,6 +163,7 @@ export function DoctorRdPage() {
               <span className="tag">President, IADVL (UP)</span>
               <span className="tag">Lifetime Achievement Award, UP-UK Cuticon 2016</span>
               <span className="tag">Lifetime Achievement Award, SAARC AAD 2018</span>
+              <span className="tag">Inspiring Dermatologists of India, Economic Times 2019</span>
             </div>
             <p>
               After retirement he continues private practice with his son, Dr. Gaurav Mukhija, at
@@ -142,14 +180,16 @@ export function DoctorRdPage() {
 export function DoctorGauravPage() {
   return (
     <main id="main">
-      <PageHero crumbs={["Dr. Gaurav Mukhija"]} eyebrow="Dermatologist · Cosmetic & Laser Specialist" title="Dr. Gaurav Mukhija" />
+      <PageHero
+        eyebrow="Dermatologist · Cosmetic & Laser Specialist" title="Dr. Gaurav Mukhija" />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap doctor-profile">
           <div className="doctor-photo reveal"><img src={IMG.doctorGaurav} alt="Dr. Gaurav Mukhija" /></div>
           <div>
             <div className="creds">
-              MBBS (JN Medical College, AMU Aligarh, 1996–2001) · MD Skin, VD &amp; Leprosy
-              (JJM Medical College, RGUHS, 2003–06) · Former Assistant Professor, BRD Medical College
+              MBBS (JN Medical College, AMU Aligarh, 1996–2001) · MD Dermatology, Venereology
+              &amp; Leprosy (JJM Medical College, RGUHS, 2003–06) · Former Assistant Professor,
+              BRD Medical College
             </div>
             <p>
               Dr. Gaurav Mukhija leads day-to-day clinical and cosmetic dermatology at the clinic.
@@ -179,7 +219,6 @@ export function AcneScarPage() {
   return (
     <main id="main">
       <PageHero
-        crumbs={["Treatments", "Acne Scar Treatment"]}
         eyebrow="Skin · Laser"
         title="Acne Scar Treatment in Gorakhpur"
         lede="Chemical peels and laser approaches such as MedLite C6 and AcuPulse CO2, matched to your skin after clinical evaluation."
@@ -223,6 +262,11 @@ export function AcneScarPage() {
           </aside>
         </div>
       </section>
+      <CaseGallery
+        cases={acneCases}
+        title="Acne treatment results"
+        intro="Four clinic cases showing changes following dermatologist-led acne and scar treatment."
+      />
       <CtaBand title="Discuss acne scar care with our team" copy="Book a consultation to review options suited to your skin." />
     </main>
   );
@@ -232,7 +276,6 @@ export function OpenPoresPage() {
   return (
     <main id="main">
       <PageHero
-        crumbs={["Treatments", "Open Pores Treatment"]}
         eyebrow="Skin · Laser"
         title="Open Pores Treatment in Gorakhpur"
         lede="Combined AcuPulse CO2 and MedLite C6 laser therapy considered for enlarged pores after dermatologist evaluation."
@@ -276,32 +319,125 @@ export function OpenPoresPage() {
   );
 }
 
+export function MoleRemovalPage() {
+  return (
+    <main id="main">
+      <PageHero
+        eyebrow="Dermatosurgery"
+        title="Mole Removal in Gorakhpur"
+        lede="Assessment and cosmetic surgical removal of suitable moles and skin lesions after an in-person dermatology consultation."
+      />
+      <section style={{ paddingTop: 0 }}>
+        <div className="wrap content-grid">
+          <div>
+            <img className="content-hero-img" src={assetUrl("images/mole-removal.jpg")} alt="Dermatology assessment for mole removal" />
+            <h2>Cosmetic mole removal</h2>
+            <p>
+              Moles vary in type, depth and location. The dermatologist first examines the lesion
+              and determines whether cosmetic removal is appropriate or whether further assessment
+              is needed. The procedure and aftercare plan are selected for the individual lesion.
+            </p>
+            <p className="disclaimer">
+              Do not attempt to remove or treat a changing, bleeding or symptomatic mole at home.
+              Seek an in-person medical assessment.
+            </p>
+          </div>
+          <aside className="side-card">
+            <h3>At a glance</h3>
+            <ul className="split-list">
+              <li><span className="tick">✓</span>Dermatologist assessment</li>
+              <li><span className="tick">✓</span>Cosmetic surgical options</li>
+              <li><span className="tick">✓</span>Procedure-specific aftercare</li>
+            </ul>
+            <a href={withBase("book-appointment/")} className="btn btn-primary btn-block">Book Consultation</a>
+          </aside>
+        </div>
+      </section>
+      <CaseGallery
+        cases={moleCases}
+        title="Mole removal results"
+        intro="Three clinic cases photographed before and after cosmetic mole removal."
+      />
+      <CtaBand title="Have a mole you would like assessed?" copy="Book an in-person dermatology consultation." />
+    </main>
+  );
+}
+
+export function VitiligoPage() {
+  return (
+    <main id="main">
+      <PageHero
+        eyebrow="Medical dermatology · Phototherapy · Surgery"
+        title="Vitiligo Treatment in Gorakhpur"
+        lede="Medical and procedural vitiligo care using options selected for the site, stability and extent of each patient’s condition."
+      />
+      <section style={{ paddingTop: 0 }}>
+        <div className="wrap content-grid">
+          <div>
+            <img className="content-hero-img" src={resultAsset("vitiligo-1-after.webp")} alt="Vitiligo treatment progress at Mukhija Skin & Laser Clinic" />
+            <h2>Vitiligo care at the clinic</h2>
+            <p>
+              The clinic offers narrow-band UVB phototherapy, Excimer laser and vitiligo surgery
+              for suitable patients. Surgical options can include punch grafting and ultrathin
+              split-thickness skin grafting. The dermatologist determines suitability after
+              assessing disease activity, location and previous treatment.
+            </p>
+            <p className="disclaimer">
+              Vitiligo response differs by patient and body site. A consultation is required before
+              any phototherapy, laser or surgical treatment is recommended.
+            </p>
+          </div>
+          <aside className="side-card">
+            <h3>Treatment facilities</h3>
+            <ul className="split-list">
+              <li><span className="tick">✓</span>Narrow-band UVB phototherapy</li>
+              <li><span className="tick">✓</span>Excimer laser</li>
+              <li><span className="tick">✓</span>Punch grafting</li>
+              <li><span className="tick">✓</span>Ultrathin split-thickness grafting</li>
+            </ul>
+            <a href={withBase("book-appointment/")} className="btn btn-primary btn-block">Book Consultation</a>
+          </aside>
+        </div>
+      </section>
+      <CaseGallery
+        cases={vitiligoCases}
+        title="Vitiligo treatment results"
+        intro="Clinic cases across facial, eyelid, hand, foot and trunk vitiligo."
+      />
+      <section className="procedure-section">
+        <div className="wrap">
+          <div className="section-head">
+            <div className="eyebrow">Treatment process</div>
+            <h2>Vitiligo surgery and progress</h2>
+          </div>
+          <div className="procedure-grid">
+            <figure className="gallery-card">
+              <img src={resultAsset("vitiligo-grafting-procedure.webp")} alt="Punch grafting procedure for palm vitiligo" loading="lazy" />
+              <figcaption>Punch grafting procedure</figcaption>
+            </figure>
+            <figure className="gallery-card">
+              <img src={resultAsset("vitiligo-treatment-progress.webp")} alt="Repigmentation progress following vitiligo treatment" loading="lazy" />
+              <figcaption>Treatment progress</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+      <CtaBand title="Discuss vitiligo treatment options" copy="Book an assessment with our dermatology team." />
+    </main>
+  );
+}
+
 export function BeforeAfterPage() {
   return (
     <main id="main">
       <PageHero
-        crumbs={["Before & After"]}
-        eyebrow="Treatment gallery"
+        eyebrow="Patient results"
         title="Before & After"
-        lede="An overview of the treatment areas we see most often at Mukhija Skin & Laser Clinic. Individual results vary and are not guaranteed."
+        lede="Real clinic cases across acne treatment, cosmetic mole removal and vitiligo care. Individual results vary and are not guaranteed."
       />
-      <section style={{ paddingTop: 0 }}>
-        <div className="wrap">
-          <div className="gallery-grid">
-            {gallery.map((item) => (
-              <figure className="gallery-card" key={item.file}>
-                <img src={assetUrl(`images/${item.file}`)} alt={item.label} loading="lazy" />
-                <figcaption>{item.label}</figcaption>
-              </figure>
-            ))}
-          </div>
-          <p className="disclaimer" style={{ marginTop: 28 }}>
-            The images above are illustrative placeholders, not patient photographs. Clinic-approved
-            before &amp; after photography will replace them. Treatment outcomes depend on individual
-            patient factors and are determined by the consulting dermatologist.
-          </p>
-        </div>
-      </section>
+      <CaseGallery cases={acneCases} title="Acne treatment" />
+      <CaseGallery cases={moleCases} title="Cosmetic mole removal" />
+      <CaseGallery cases={vitiligoCases} title="Vitiligo treatment" />
       <CtaBand title="Want to discuss your concern?" copy="Book a consultation with our dermatology team." />
     </main>
   );
@@ -310,7 +446,8 @@ export function BeforeAfterPage() {
 export function ContactPage() {
   return (
     <main id="main">
-      <PageHero crumbs={["Contact"]} eyebrow="Visit us" title="Contact & Directions" />
+      <PageHero
+        eyebrow="Visit us" title="Contact & Directions" />
       <section style={{ paddingTop: 0 }} id="hours">
         <div className="wrap contact-grid">
           <div className="side-card">
@@ -368,7 +505,6 @@ export function BookAppointmentPage() {
   return (
     <main id="main">
       <PageHero
-        crumbs={["Book Appointment"]}
         eyebrow="Online appointment request"
         title="Book an Appointment"
         lede="Consultation windows: Monday–Saturday, 12 PM–03 PM and 04 PM–06 PM. Submitting this form is a request only — our team confirms by phone or WhatsApp."

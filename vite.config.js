@@ -13,6 +13,8 @@ const routeNames = [
   "dr-gaurav-mukhija-2",
   "acne-scar-treatment-gorakhpur",
   "open-pores-treatment-gorakhpur",
+  "mole-removal-gorakhpur",
+  "vitiligo-treatment-gorakhpur",
   "before-after",
   "contact-us",
   "book-appointment",

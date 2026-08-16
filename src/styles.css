@@ -192,7 +192,6 @@ section { padding: 96px 0; }
 .page-hero { padding: 80px 0 60px; background: var(--ivory-deep); }
 .page-hero h1 { max-width: 940px; font-size: clamp(2.8rem, 5vw, 4.8rem); }
 .lede { max-width: 750px; font-size: 1.05rem; }
-.breadcrumbs { display: flex; margin-bottom: 30px; gap: 10px; color: var(--ink-soft); font-size: 0.72rem; }
 .cat-filter { position: sticky; z-index: 5; top: 82px; display: flex; margin: -20px 0 50px; padding: 12px; border: 1px solid var(--line); background: rgba(250,246,239,.94); backdrop-filter: blur(12px); gap: 8px; }
 .cat-pill { padding: 9px 14px; border: 1px solid var(--line); border-radius: 100px; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; }
 .cat-pill.active { border-color: var(--forest); background: var(--forest); color: white; }
@@ -285,6 +284,33 @@ section { padding: 96px 0; }
 .gallery-card { margin: 0; overflow: hidden; border: 1px solid var(--line); background: white; }
 .gallery-card img { height: 220px; }
 .gallery-card figcaption { padding: 12px 14px; color: var(--ink-soft); font-size: 0.75rem; }
+.results-section { padding-top: 74px; }
+.results-section:nth-of-type(even) { background: rgba(241, 234, 223, 0.48); }
+.case-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.case-card { margin: 0; overflow: hidden; border: 1px solid var(--line); background: var(--white); }
+.case-pair { display: grid; grid-template-columns: 1fr 1fr; }
+.case-pair > div { position: relative; min-width: 0; height: 390px; overflow: hidden; }
+.case-pair > div + div { border-left: 1px solid rgba(255,255,255,.7); }
+.case-pair img { object-position: center; }
+.case-pair span {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 5px 9px;
+  border-radius: 100px;
+  background: rgba(32,35,30,.78);
+  color: white;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.case-pair > div:first-child span { right: auto; left: 12px; }
+.case-card figcaption { padding: 15px 18px; color: var(--ink-soft); font-size: .78rem; }
+.results-disclaimer { margin-top: 28px; }
+.procedure-section { padding-top: 12px; }
+.procedure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.procedure-grid .gallery-card img { height: 480px; }
 .contact-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 24px; }
 .map-frame { min-height: 420px; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; }
 .map-frame iframe { width: 100%; height: 100%; min-height: 420px; border: 0; }
@@ -299,12 +325,16 @@ section { padding: 96px 0; }
 @media (max-width: 900px) {
   .doctor-profile, .content-grid, .contact-grid { grid-template-columns: 1fr; }
   .gallery-grid { grid-template-columns: 1fr 1fr; }
+  .case-pair > div { height: 330px; }
   .form-grid { grid-template-columns: 1fr; }
   .doctor-profile .doctor-photo { min-height: 360px; }
 }
 
 @media (max-width: 500px) {
   .gallery-grid { grid-template-columns: 1fr; }
+  .case-grid, .procedure-grid { grid-template-columns: 1fr; }
+  .case-pair > div { height: 300px; }
+  .procedure-grid .gallery-card img { height: 360px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -12,8 +12,10 @@ import {
   ContactPage,
   DoctorGauravPage,
   DoctorRdPage,
+  MoleRemovalPage,
   NotFoundPage,
   OpenPoresPage,
+  VitiligoPage,
 } from "./pages/RecoveredPages";
 import { absoluteAssetUrl, appPathFromLocation, assetUrl, withBase } from "./paths";
 
@@ -23,7 +25,7 @@ const clinicSchema = {
   "@context": "https://schema.org",
   "@type": "MedicalClinic",
   name: "Mukhija Skin & Laser Clinic",
-  image: "https://www.mukhijaskinclinic.com/logo.png",
+  image: absoluteAssetUrl("logo.png"),
   telephone: ["+91-9554220700", "0551-2347093"],
   email: "mukhijagaurav@yahoo.co.in",
   address: {
@@ -123,6 +125,20 @@ const pages = {
     description: "Open pores treatment in Gorakhpur using combined AcuPulse CO2 and MedLite C6 laser therapy.",
     canonical: "/open-pores-treatment-gorakhpur/",
   },
+  moleRemoval: {
+    kind: "component",
+    Component: MoleRemovalPage,
+    title: "Mole Removal in Gorakhpur | Mukhija Skin & Laser Clinic",
+    description: "Dermatologist assessment and cosmetic mole removal in Gorakhpur, with real clinic before and after cases.",
+    canonical: "/mole-removal-gorakhpur/",
+  },
+  vitiligo: {
+    kind: "component",
+    Component: VitiligoPage,
+    title: "Vitiligo Treatment in Gorakhpur | Mukhija Skin & Laser Clinic",
+    description: "Vitiligo care in Gorakhpur with NB-UVB phototherapy, Excimer laser and vitiligo surgery, including real clinic results.",
+    canonical: "/vitiligo-treatment-gorakhpur/",
+  },
   beforeAfter: {
     kind: "component",
     Component: BeforeAfterPage,
@@ -183,6 +199,12 @@ const routeMap = {
   "/open-pores-treatment-gorakhpur": "openPores",
   "/open-pores-treatment-gorakhpur/": "openPores",
   "/open-pores-treatment-gorakhpur.html": "openPores",
+  "/mole-removal-gorakhpur": "moleRemoval",
+  "/mole-removal-gorakhpur/": "moleRemoval",
+  "/mole-removal-gorakhpur.html": "moleRemoval",
+  "/vitiligo-treatment-gorakhpur": "vitiligo",
+  "/vitiligo-treatment-gorakhpur/": "vitiligo",
+  "/vitiligo-treatment-gorakhpur.html": "vitiligo",
   "/before-after": "beforeAfter",
   "/before-after/": "beforeAfter",
   "/before-after.html": "beforeAfter",
@@ -389,10 +411,10 @@ function Header({ open, setOpen }) {
             <div className="has-drop">
               <a href={withBase("/treatments/")}>Treatments <span aria-hidden="true">▾</span></a>
               <div className="dropdown">
-                <a href={withBase("/treatments/#skin")}>Skin</a>
-                <a href={withBase("/treatments/#laser")}>Laser &amp; Aesthetic</a>
-                <a href={withBase("/treatments/#hair")}>Hair</a>
-                <a href={withBase("/treatments/#medical")}>Medical Dermatology</a>
+                <a href={withBase("/acne-scar-treatment-gorakhpur/")}>Acne &amp; Scars</a>
+                <a href={withBase("/mole-removal-gorakhpur/")}>Mole Removal</a>
+                <a href={withBase("/vitiligo-treatment-gorakhpur/")}>Vitiligo Treatment</a>
+                <a href={withBase("/treatments/")}>All Treatments</a>
               </div>
             </div>
             <a href={withBase("/before-after/")}>Before &amp; After</a>
@@ -419,6 +441,8 @@ function Header({ open, setOpen }) {
           <a href={withBase("/treatments/")}>All Treatments</a>
           <a href={withBase("/acne-scar-treatment-gorakhpur/")}>Acne Scar Treatment</a>
           <a href={withBase("/open-pores-treatment-gorakhpur/")}>Open Pores Treatment</a>
+          <a href={withBase("/mole-removal-gorakhpur/")}>Mole Removal</a>
+          <a href={withBase("/vitiligo-treatment-gorakhpur/")}>Vitiligo Treatment</a>
           <a href={withBase("/before-after/")}>Before &amp; After</a>
           <a href={withBase("/contact-us/")}>Contact</a>
         </nav>

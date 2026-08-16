@@ -112,16 +112,14 @@ pages_more.py` to rebuild everything from source.
 
 ## What's placeholder and must be replaced before launch
 
-- **All photography** is stock (Unsplash License, free tier) purely to show
-  composition/cropping — replace with the clinic's real doctor portraits, clinic
-  interior, equipment, and **clinic-approved** before/after photography (Section 32
-  of the brief). Every photo is committed under `public/images/` and served from the
-  site itself; nothing hotlinks to a third-party host, so swapping in real photos is
-  just a matter of replacing files of the same name.
-- **Before/after images** use the same stock photo for both sides of the slider —
-  it's there to demonstrate the drag-to-compare interaction only, not real results.
-- **The Before & After page** shows illustrative treatment imagery, labelled as such
-  on the page, because the legacy site's patient gallery is no longer online.
+- The doctor portraits and acne, mole-removal and vitiligo result photographs are
+  clinic-supplied assets. They are optimized as WebP files under
+  `public/images/results/` and used on the relevant doctor, treatment and Before &
+  After pages.
+- Remaining general clinic and treatment photography is self-hosted stock imagery
+  from Unsplash's free license tier. Nothing hotlinks to a third-party image host.
+- Patient result photography is presented with a prominent individual-results
+  disclaimer and without patient names or other supplied identifiers.
 - **Testimonials** are the two real Google reviews quoted on the current homepage;
   no testimonials were invented.
 - **The appointment form** is frontend-only (see the note printed to the browser
