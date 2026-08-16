@@ -349,7 +349,7 @@ function IntroSplash({ onComplete }) {
     };
 
     const updateProgress = (now) => {
-      const progress = Math.max(0, Math.min(100, Math.round(((now - startTime) / 2000) * 100)));
+      const progress = Math.max(0, Math.min(100, Math.round(((now - startTime) / 3000) * 100)));
       progressFill.style.width = `${progress}%`;
       progressValue.textContent = `${progress}%`;
       loader.setAttribute("aria-valuenow", String(progress));
@@ -391,32 +391,100 @@ function IntroSplash({ onComplete }) {
   );
 }
 
+const navMenus = [
+  {
+    id: "about",
+    label: "About",
+    href: "/about-clinic/",
+    items: [
+      { href: "/about-clinic/", label: "Our Clinic" },
+      { href: "/dr-r-d-mukhija/", label: "Dr. R. D. Mukhija" },
+      { href: "/dr-gaurav-mukhija-2/", label: "Dr. Gaurav Mukhija" },
+    ],
+  },
+  {
+    id: "treatments",
+    label: "Treatments",
+    href: "/treatments/",
+    items: [
+      { href: "/acne-scar-treatment-gorakhpur/", label: "Acne & Scars" },
+      { href: "/mole-removal-gorakhpur/", label: "Mole Removal" },
+      { href: "/vitiligo-treatment-gorakhpur/", label: "Vitiligo Treatment" },
+      { href: "/treatments/", label: "All Treatments" },
+    ],
+  },
+];
+
+function NavDropdown({ menu, isOpen, onOpen, onClose, onToggle }) {
+  return (
+    <div
+      className={`has-drop ${isOpen ? "is-open" : ""}`}
+      onMouseEnter={onOpen}
+      onMouseLeave={onClose}
+      onFocus={onOpen}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) onClose();
+      }}
+    >
+      <a
+        href={withBase(menu.href)}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        onClick={(event) => {
+          event.preventDefault();
+          onToggle();
+        }}
+      >
+        {menu.label} <span aria-hidden="true">▾</span>
+      </a>
+      <div className="dropdown" role="menu">
+        {menu.items.map((item) => (
+          <a key={item.href + item.label} href={withBase(item.href)} onClick={onClose}>
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Header({ open, setOpen }) {
+  const [openMenu, setOpenMenu] = useState(null);
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const closeOnOutside = (event) => {
+      if (!navRef.current?.contains(event.target)) setOpenMenu(null);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpenMenu(null);
+    };
+    document.addEventListener("pointerdown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
   return (
     <>
       <a className="skip-link" href="#main">Skip to main content</a>
       <header className="site-header">
         <div className="header-inner">
           <a href={withBase("/")} className="brand"><BrandMark /></a>
-          <nav className="main-nav" aria-label="Primary">
+          <nav className="main-nav" aria-label="Primary" ref={navRef}>
             <a href={withBase("/")}>Home</a>
-            <div className="has-drop">
-              <a href={withBase("/about-clinic/")}>About <span aria-hidden="true">▾</span></a>
-              <div className="dropdown">
-                <a href={withBase("/about-clinic/")}>Our Clinic</a>
-                <a href={withBase("/dr-r-d-mukhija/")}>Dr. R. D. Mukhija</a>
-                <a href={withBase("/dr-gaurav-mukhija-2/")}>Dr. Gaurav Mukhija</a>
-              </div>
-            </div>
-            <div className="has-drop">
-              <a href={withBase("/treatments/")}>Treatments <span aria-hidden="true">▾</span></a>
-              <div className="dropdown">
-                <a href={withBase("/acne-scar-treatment-gorakhpur/")}>Acne &amp; Scars</a>
-                <a href={withBase("/mole-removal-gorakhpur/")}>Mole Removal</a>
-                <a href={withBase("/vitiligo-treatment-gorakhpur/")}>Vitiligo Treatment</a>
-                <a href={withBase("/treatments/")}>All Treatments</a>
-              </div>
-            </div>
+            {navMenus.map((menu) => (
+              <NavDropdown
+                key={menu.id}
+                menu={menu}
+                isOpen={openMenu === menu.id}
+                onOpen={() => setOpenMenu(menu.id)}
+                onClose={() => setOpenMenu(null)}
+                onToggle={() => setOpenMenu((current) => (current === menu.id ? null : menu.id))}
+              />
+            ))}
             <a href={withBase("/before-after/")}>Before &amp; After</a>
             <a href={withBase("/contact-us/")}>Contact</a>
           </nav>

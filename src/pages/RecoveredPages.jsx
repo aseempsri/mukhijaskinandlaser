@@ -17,11 +17,18 @@ const acneCases = Array.from({ length: 4 }, (_, index) => ({
   label: `Acne treatment case ${index + 1}`,
 }));
 
-const moleCases = Array.from({ length: 3 }, (_, index) => ({
-  before: `mole-${index + 1}-before.webp`,
-  after: `mole-${index + 1}-after.webp`,
-  label: `Mole removal case ${index + 1}`,
-}));
+const moleCases = [
+  {
+    before: "mole-1-before.webp",
+    after: "mole-1-after.webp",
+    label: "Mole removal case 1",
+  },
+  {
+    before: "mole-2-before.webp",
+    after: "mole-2-after.webp",
+    label: "Mole removal case 2",
+  },
+];
 
 const vitiligoAreas = ["Face", "Face", "Foot", "Eyelid", "Trunk", "Palm", "Face"];
 const vitiligoCases = vitiligoAreas.map((area, index) => ({
@@ -66,12 +73,19 @@ function CaseGallery({ cases, title, intro }) {
   );
 }
 
-function PageHero({ eyebrow, title, lede }) {
+function PageHero({ eyebrow, title, creds, lede }) {
   return (
     <section className="page-hero">
       <div className="wrap">
         {eyebrow ? <div className="eyebrow">{eyebrow}</div> : null}
         <h1>{title}</h1>
+        {creds?.length ? (
+          <ul className="hero-creds">
+            {creds.map((line) => (
+              <li key={line}>· {line}</li>
+            ))}
+          </ul>
+        ) : null}
         {lede ? <p className="lede">{lede}</p> : null}
       </div>
     </section>
@@ -106,7 +120,7 @@ export function AboutClinicPage() {
       <section style={{ paddingTop: 0 }}>
         <div className="wrap split">
           <div className="split-media reveal">
-            <img src={IMG.clinic} alt="Inside Mukhija Skin & Laser Clinic" />
+            <img src={IMG.clinic} alt="Dermatology clinic consultation setting" />
           </div>
           <div>
             <div className="eyebrow">Where experience meets modern dermatology</div>
@@ -135,15 +149,19 @@ export function DoctorRdPage() {
   return (
     <main id="main">
       <PageHero
-        eyebrow="Founder · Senior Dermatologist" title="Dr. R. D. Mukhija" />
+        eyebrow="Founder · Senior Dermatologist"
+        title="Dr. R. D. Mukhija"
+        creds={[
+          "MBBS (MAMC, New Delhi, 1968)",
+          "MD (AIIMS, New Delhi, 1972)",
+          "Former Professor & Head, Dept. of Skin, VD & Leprosy",
+          "Former Principal, BRD Medical College, Gorakhpur",
+        ]}
+      />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap doctor-profile">
           <div className="doctor-photo reveal"><img src={IMG.doctorSenior} alt="Dr. R. D. Mukhija" /></div>
           <div>
-            <div className="creds">
-              MBBS (MAMC, New Delhi, 1968) · MD (AIIMS, New Delhi, 1972) · Former Professor &amp; Head,
-              Dept. of Skin, VD &amp; Leprosy · Former Principal, BRD Medical College, Gorakhpur
-            </div>
             <p>
               Dr. R. D. Mukhija completed his MD under the supervision of late Prof. K. S. Kandhari,
               late Prof. L. K. Bhutani and Dr. J. S. Pasricha. He joined as a lecturer in Jhansi in
@@ -181,16 +199,18 @@ export function DoctorGauravPage() {
   return (
     <main id="main">
       <PageHero
-        eyebrow="Dermatologist · Cosmetic & Laser Specialist" title="Dr. Gaurav Mukhija" />
+        eyebrow="Dermatologist · Cosmetic & Laser Specialist"
+        title="Dr. Gaurav Mukhija"
+        creds={[
+          "MBBS (JN Medical College, AMU Aligarh, 1996–2001)",
+          "MD Dermatology, Venereology & Leprosy (JJM Medical College, RGUHS, 2003–06)",
+          "Former Assistant Professor, BRD Medical College",
+        ]}
+      />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap doctor-profile">
           <div className="doctor-photo reveal"><img src={IMG.doctorGaurav} alt="Dr. Gaurav Mukhija" /></div>
           <div>
-            <div className="creds">
-              MBBS (JN Medical College, AMU Aligarh, 1996–2001) · MD Dermatology, Venereology
-              &amp; Leprosy (JJM Medical College, RGUHS, 2003–06) · Former Assistant Professor,
-              BRD Medical College
-            </div>
             <p>
               Dr. Gaurav Mukhija leads day-to-day clinical and cosmetic dermatology at the clinic.
               His work covers diagnosis and management of skin, hair and nail conditions, along with
@@ -356,7 +376,7 @@ export function MoleRemovalPage() {
       <CaseGallery
         cases={moleCases}
         title="Mole removal results"
-        intro="Three clinic cases photographed before and after cosmetic mole removal."
+        intro="Two clinic cases photographed before and after cosmetic mole removal."
       />
       <CtaBand title="Have a mole you would like assessed?" copy="Book an in-person dermatology consultation." />
     </main>
