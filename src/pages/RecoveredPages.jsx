@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { withBase } from "../paths";
+import { assetUrl, withBase } from "../paths";
 
 const IMG = {
-  clinic: "https://images.unsplash.com/photo-1666214280165-2ea5c9c00688?auto=format&fit=crop&w=1200&q=80",
-  doctorSenior: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=1200&q=80",
-  doctorGaurav: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=1200&q=80",
-  acne: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=80",
-  pores: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=80",
+  clinic: assetUrl("images/clinic-interior.jpg"),
+  doctorSenior: assetUrl("images/doctor-rd-mukhija.jpg"),
+  doctorGaurav: assetUrl("images/doctor-gaurav-mukhija.jpg"),
+  acne: assetUrl("images/acne-scars.jpg"),
+  pores: assetUrl("images/open-pores.jpg"),
 };
 
 const gallery = [
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/Acne-Scar-600x600.jpg", label: "Acne scar treatment" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/BA-5-Laser-hair-Removal-600x600.jpg", label: "Laser hair removal" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/BA-6-Laser-hair-Removal-600x600.jpg", label: "Laser hair removal" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/BA-7-PRP-Therapy-600x600.jpg", label: "PRP therapy" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/laser-hair-removal-600x600.jpg", label: "Laser hair removal" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/mole-removal-1-600x600.jpg", label: "Mole removal" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/prp-therapy-600x600.jpg", label: "PRP therapy" },
-  { src: "https://www.mukhijaskinclinic.com/wp-content/uploads/2019/04/tattoo-removal-600x600.jpg", label: "Tattoo removal" },
+  { file: "acne-scars.jpg", label: "Acne scar treatment" },
+  { file: "open-pores.jpg", label: "Open pores treatment" },
+  { file: "laser-hair-removal.jpg", label: "Laser hair reduction" },
+  { file: "hair-fall-prp.jpg", label: "PRP therapy for hair" },
+  { file: "pigmentation.jpg", label: "Pigmentation & melasma" },
+  { file: "skin-rejuvenation.jpg", label: "Skin rejuvenation" },
+  { file: "mole-removal.jpg", label: "Mole & skin lesion removal" },
+  { file: "tattoo-removal.jpg", label: "Tattoo removal" },
 ];
 
 function PageHero({ crumbs, eyebrow, title, lede }) {
@@ -281,23 +281,24 @@ export function BeforeAfterPage() {
     <main id="main">
       <PageHero
         crumbs={["Before & After"]}
-        eyebrow="Patient gallery"
+        eyebrow="Treatment gallery"
         title="Before & After"
-        lede="Selected clinic gallery images from Mukhija Skin & Laser Clinic. Individual results vary and are not guaranteed."
+        lede="An overview of the treatment areas we see most often at Mukhija Skin & Laser Clinic. Individual results vary and are not guaranteed."
       />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap">
           <div className="gallery-grid">
             {gallery.map((item) => (
-              <figure className="gallery-card" key={item.src}>
-                <img src={item.src} alt={item.label} loading="lazy" />
+              <figure className="gallery-card" key={item.file}>
+                <img src={assetUrl(`images/${item.file}`)} alt={item.label} loading="lazy" />
                 <figcaption>{item.label}</figcaption>
               </figure>
             ))}
           </div>
           <p className="disclaimer" style={{ marginTop: 28 }}>
-            Before &amp; after images reflect individual patient outcomes. Results vary and should
-            not be read as a promise of identical results for every patient.
+            The images above are illustrative placeholders, not patient photographs. Clinic-approved
+            before &amp; after photography will replace them. Treatment outcomes depend on individual
+            patient factors and are determined by the consulting dermatologist.
           </p>
         </div>
       </section>

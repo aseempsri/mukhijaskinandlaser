@@ -32,3 +32,10 @@ export function assetUrl(file) {
   const name = String(file).replace(/^\//, "");
   return `${BASE}/${name}`;
 }
+
+/** Fully-qualified asset URL, required by og:image and twitter:image. */
+export function absoluteAssetUrl(file) {
+  const path = assetUrl(file);
+  if (typeof window === "undefined") return path;
+  return new URL(path, window.location.origin).href;
+}

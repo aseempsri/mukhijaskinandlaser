@@ -15,9 +15,9 @@ import {
   NotFoundPage,
   OpenPoresPage,
 } from "./pages/RecoveredPages";
-import { appPathFromLocation, assetUrl, withBase } from "./paths";
+import { absoluteAssetUrl, appPathFromLocation, assetUrl, withBase } from "./paths";
 
-const IMAGE = "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80";
+const IMAGE = absoluteAssetUrl("images/hero-consultation.jpg");
 const LOGO = assetUrl("logo.png");
 const clinicSchema = {
   "@context": "https://schema.org",
@@ -44,45 +44,46 @@ const clinicSchema = {
   url: "https://www.mukhijaskinclinic.com/",
 };
 
-function normalizeLegacyLinks(html) {
+function normalizeContentUrls(html) {
   return html.replace(/href="(?!https?:|tel:|mailto:|#)([^"]+?)\.html(#[^"]*)?"/g, (_, file, hash = "") => {
     if (file === "index") return `href="${withBase(`/${hash}`)}"`;
     return `href="${withBase(`/${file}/${hash}`)}"`;
-  }).replace(/href="(?!https?:|tel:|mailto:|#|\/mukhijaskinandlaser)(\/[^"]*)"/g, (_, path) => `href="${withBase(path)}"`);
+  }).replace(/href="(?!https?:|tel:|mailto:|#|\/mukhijaskinandlaser)(\/[^"]*)"/g, (_, path) => `href="${withBase(path)}"`)
+    .replace(/src="(\/[^"]*)"/g, (_, path) => `src="${assetUrl(path)}"`);
 }
 
 const pages = {
   home: {
     kind: "html",
-    html: normalizeLegacyLinks(homeHtml),
+    html: normalizeContentUrls(homeHtml),
     title: "Mukhija Skin & Laser Clinic | Dermatologist & Skin Specialist in Gorakhpur",
     description: "Expert dermatology, skin, hair and laser treatments at Mukhija Skin & Laser Clinic in Gorakhpur. Consult experienced dermatologists for personalised skin, hair and aesthetic care.",
     canonical: "/",
   },
   treatments: {
     kind: "html",
-    html: normalizeLegacyLinks(treatmentsHtml),
+    html: normalizeContentUrls(treatmentsHtml),
     title: "Skin, Hair & Laser Treatments in Gorakhpur | Mukhija Skin & Laser Clinic",
     description: "Browse dermatology, laser and cosmetic treatments at Mukhija Skin & Laser Clinic, Gorakhpur — organised by Skin, Laser & Aesthetic, Hair and Medical Dermatology.",
     canonical: "/treatments/",
   },
   privacy: {
     kind: "html",
-    html: normalizeLegacyLinks(privacyHtml),
+    html: normalizeContentUrls(privacyHtml),
     title: "Privacy Policy | Mukhija Skin & Laser Clinic",
     description: "Privacy Policy for Mukhija Skin & Laser Clinic, Gorakhpur.",
     canonical: "/privacy-policy/",
   },
   terms: {
     kind: "html",
-    html: normalizeLegacyLinks(termsHtml),
+    html: normalizeContentUrls(termsHtml),
     title: "Terms & Conditions | Mukhija Skin & Laser Clinic",
     description: "Terms and conditions for use of the Mukhija Skin & Laser Clinic website.",
     canonical: "/terms/",
   },
   disclaimer: {
     kind: "html",
-    html: normalizeLegacyLinks(disclaimerHtml),
+    html: normalizeContentUrls(disclaimerHtml),
     title: "Medical Disclaimer | Mukhija Skin & Laser Clinic",
     description: "Medical disclaimer for Mukhija Skin & Laser Clinic, Gorakhpur.",
     canonical: "/medical-disclaimer/",
