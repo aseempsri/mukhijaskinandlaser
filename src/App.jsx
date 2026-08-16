@@ -19,13 +19,14 @@ import {
 } from "./pages/RecoveredPages";
 import { absoluteAssetUrl, appPathFromLocation, assetUrl, withBase } from "./paths";
 
-const IMAGE = absoluteAssetUrl("images/hero-consultation.jpg");
+const IMAGE = absoluteAssetUrl("og-image.png");
 const LOGO = assetUrl("logo.png");
 const clinicSchema = {
   "@context": "https://schema.org",
   "@type": "MedicalClinic",
   name: "Mukhija Skin & Laser Clinic",
-  image: absoluteAssetUrl("logo.png"),
+  image: absoluteAssetUrl("og-image.png"),
+  logo: absoluteAssetUrl("logo.png"),
   telephone: ["+91-9554220700", "0551-2347093"],
   email: "mukhijagaurav@yahoo.co.in",
   address: {
@@ -243,6 +244,11 @@ function useSeo(page) {
     setMeta('meta[property="og:title"]', "content", page.title);
     setMeta('meta[property="og:description"]', "content", page.description);
     setMeta('meta[property="og:image"]', "content", IMAGE);
+    setMeta('meta[property="og:image:secure_url"]', "content", IMAGE);
+    setMeta('meta[property="og:image:type"]', "content", "image/png");
+    setMeta('meta[property="og:image:width"]', "content", "1200");
+    setMeta('meta[property="og:image:height"]', "content", "630");
+    setMeta('meta[property="og:image:alt"]', "content", "Mukhija Skin & Laser Clinic logo");
     setMeta('meta[property="og:site_name"]', "content", "Mukhija Skin & Laser Clinic");
     setMeta('meta[name="twitter:card"]', "content", "summary_large_image");
     setMeta('meta[name="twitter:image"]', "content", IMAGE);
