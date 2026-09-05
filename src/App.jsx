@@ -665,6 +665,43 @@ function App() {
 
     const observer = new IntersectionObserver((entries) => entries.forEach((entry) => entry.target.classList.toggle("visible", entry.isIntersecting)), { threshold: 0.08 });
     document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
+
+    const heroHotspots = document.querySelector(".hero-hotspots");
+    const goHeroPath = (nextPath) => {
+      window.history.pushState({}, "", withBase(nextPath));
+      setPath(nextPath);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    const onHeroActivate = (event) => {
+      if (!window.matchMedia("(max-width: 760px)").matches) return;
+      const hotspot = event.target.closest?.("a.hero-hotspot");
+      if (hotspot) {
+        event.preventDefault();
+        const nextPath = appPathFromLocation(new URL(hotspot.href, window.location.href).pathname);
+        goHeroPath(nextPath);
+        return;
+      }
+      const point = event.changedTouches?.[0] ?? event;
+      if (point?.clientX == null || !heroHotspots) return;
+      const rect = heroHotspots.getBoundingClientRect();
+      const x = (point.clientX - rect.left) / rect.width;
+      const y = (point.clientY - rect.top) / rect.height;
+      if (x < 0.05 || x > 0.58) return;
+      if (y >= 0.565 && y < 0.63) {
+        event.preventDefault();
+        goHeroPath("/book-appointment/");
+      } else if (y >= 0.63 && y <= 0.70) {
+        event.preventDefault();
+        goHeroPath("/treatments/");
+      }
+    };
+    if (heroHotspots) {
+      heroHotspots.addEventListener("click", onHeroActivate);
+      cleanups.push(() => {
+        heroHotspots.removeEventListener("click", onHeroActivate);
+      });
+    }
+
     return () => {
       filterButtons.forEach((button) => button.removeEventListener("click", onFilter));
       cleanups.forEach((cleanup) => cleanup());

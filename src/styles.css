@@ -190,6 +190,7 @@ section { padding: 96px 0; }
 .hero h1 em { color: var(--gold); font-weight: 420; }
 .hero-copy { max-width: 540px; font-size: 1.05rem; }
 .hero-ctas, .cta-actions { display: flex; margin-top: 30px; flex-wrap: wrap; gap: 12px; }
+.hero-hotspots { display: none; }
 .hero-loc { display: flex; margin-top: 50px; padding-top: 24px; border-top: 1px solid var(--line); gap: 42px; color: var(--ink-soft); font-size: 0.78rem; }
 .hero-loc div { display: flex; flex-direction: column; }
 .hero-loc strong { color: var(--ink); }
@@ -384,51 +385,57 @@ section { padding: 96px 0; }
     inset: 0;
     width: 100%;
     margin: 0;
-    z-index: 2;
+    z-index: 1;
     pointer-events: none;
   }
   .hero-copy-col {
-    position: relative;
     width: 100%;
     max-width: none;
     height: 100%;
-    pointer-events: none;
   }
   .hero-tag,
   .hero h1,
   .hero-copy,
+  .hero-ctas,
   .hero-loc {
-    display: none;
+    display: none !important;
   }
-  .hero-ctas {
-    position: absolute;
-    left: 5%;
-    top: 44.5%;
-    width: 62%;
-    height: 12.5%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 0;
-    pointer-events: auto;
-    z-index: 3;
-  }
-  .hero-ctas .btn {
+  .hero-hotspots {
     display: block;
-    flex: 0 0 46%;
-    width: 100%;
-    min-height: 0;
-    max-height: none;
-    height: 46%;
-    padding: 0;
-    border-color: transparent !important;
-    background: transparent !important;
-    color: transparent !important;
-    box-shadow: none !important;
-    opacity: 1;
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: auto;
+  }
+  .hero-hotspot {
+    position: absolute;
+    left: 6%;
+    width: 50%;
+    height: 6.2%;
+    border-radius: 999px;
+    pointer-events: auto;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    z-index: 31;
+    /* Opaque enough for iOS Safari hit-testing, invisible to the eye */
+    background: #000;
+    opacity: 0.01;
+    color: transparent;
+    font-size: 12px;
+    line-height: 1;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: rgba(35, 44, 30, 0.2);
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .hero-hotspot-book {
+    top: 57.2%;
+    height: 5.6%;
+  }
+  .hero-hotspot-treat {
+    top: 62.7%;
+    height: 6.5%;
   }
   .trust-grid { grid-template-columns: 1fr 1fr; }
   .trust-item { min-height: 135px; }
