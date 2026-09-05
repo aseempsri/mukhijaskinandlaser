@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { assetUrl, withBase } from "../paths";
+import { FACEBOOK_URL, INSTAGRAM_URL } from "../social";
 
 const IMG = {
-  clinic: assetUrl("images/clinic-interior.jpg"),
-  doctorSenior: assetUrl("images/doctor-rd-mukhija.webp"),
-  doctorGaurav: assetUrl("images/doctor-gaurav-mukhija.webp"),
-  acne: assetUrl("images/acne-scars.jpg"),
-  pores: assetUrl("images/open-pores.jpg"),
+  clinic: assetUrl("images/clinic-interior.webp"),
+  doctorSenior: assetUrl("images/doctor-rd-mukhija-2.webp"),
+  doctorGaurav: assetUrl("images/doctor-gaurav-mukhija-2.webp"),
+  acne: assetUrl("images/treatments/acne-acne-scars.webp"),
+  pores: assetUrl("images/treatments/open-pores.webp"),
+  vitiligo: assetUrl("images/treatments/vitiligo-care.webp"),
 };
 
 const resultAsset = (file) => assetUrl(`images/results/${file}`);
@@ -120,7 +122,7 @@ export function AboutClinicPage() {
       <section style={{ paddingTop: 0 }}>
         <div className="wrap split">
           <div className="split-media reveal">
-            <img src={IMG.clinic} alt="Dermatology clinic consultation setting" />
+            <img src={IMG.clinic} alt="Reception and waiting area at Mukhija Skin & Laser Clinic" />
           </div>
           <div>
             <div className="eyebrow">Where experience meets modern dermatology</div>
@@ -394,7 +396,7 @@ export function VitiligoPage() {
       <section style={{ paddingTop: 0 }}>
         <div className="wrap content-grid">
           <div>
-            <img className="content-hero-img" src={resultAsset("vitiligo-1-after.webp")} alt="Vitiligo treatment progress at Mukhija Skin & Laser Clinic" />
+            <img className="content-hero-img" src={IMG.vitiligo} alt="Vitiligo Care treatment" />
             <h2>Vitiligo care at the clinic</h2>
             <p>
               The clinic offers narrow-band UVB phototherapy, Excimer laser and vitiligo surgery
@@ -483,6 +485,12 @@ export function ContactPage() {
               <br />
               <a href="mailto:mukhijagaurav@yahoo.co.in">mukhijagaurav@yahoo.co.in</a>
             </p>
+            <h3>Follow Us</h3>
+            <p>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">Instagram</a>
+              {" · "}
+              <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer">Facebook</a>
+            </p>
             <div className="hero-ctas">
               <a href={withBase("book-appointment/")} className="btn btn-primary">Book Appointment</a>
               <a href="https://wa.me/919554220700" className="btn btn-ghost" target="_blank" rel="noopener noreferrer">WhatsApp</a>
@@ -513,11 +521,32 @@ export function BookAppointmentPage() {
     notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [stepError, setStepError] = useState("");
 
-  const update = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+  const update = (field) => (event) => {
+    setStepError("");
+    setForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const canLeaveStep1 = () => form.name.trim() !== "" && form.phone.trim() !== "";
+
+  const goNext = (event) => {
+    if (step === 1 && !canLeaveStep1()) {
+      event.currentTarget.form?.reportValidity();
+      setStepError("Please enter your full name and phone number to continue. Email is optional.");
+      return;
+    }
+    setStepError("");
+    setStep((current) => current + 1);
+  };
 
   const onSubmit = (event) => {
     event.preventDefault();
+    if (!canLeaveStep1()) {
+      setStep(1);
+      setStepError("Please enter your full name and phone number to continue. Email is optional.");
+      return;
+    }
     console.info("Appointment request (frontend only — wire to API/CRM before go-live):", form);
     setSubmitted(true);
   };
@@ -549,9 +578,33 @@ export function BookAppointmentPage() {
               <div className="stepper" aria-live="polite">Step {step} of 3</div>
               {step === 1 && (
                 <div className="form-grid">
-                  <label>Full name<input required value={form.name} onChange={update("name")} /></label>
-                  <label>Phone<input required type="tel" value={form.phone} onChange={update("phone")} /></label>
-                  <label>Email<input type="email" value={form.email} onChange={update("email")} /></label>
+                  <label>
+                    Full name
+                    <input
+                      required
+                      name="name"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={update("name")}
+                      aria-required="true"
+                    />
+                  </label>
+                  <label>
+                    Phone
+                    <input
+                      required
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={form.phone}
+                      onChange={update("phone")}
+                      aria-required="true"
+                    />
+                  </label>
+                  <label>
+                    Email <span className="optional-hint">(optional)</span>
+                    <input name="email" type="email" autoComplete="email" value={form.email} onChange={update("email")} />
+                  </label>
                 </div>
               )}
               {step === 2 && (
@@ -586,14 +639,14 @@ export function BookAppointmentPage() {
                   {form.notes ? <p>{form.notes}</p> : null}
                 </div>
               )}
+              {stepError ? <p className="form-error" role="alert">{stepError}</p> : null}
               <div className="hero-ctas">
                 {step > 1 ? <button type="button" className="btn btn-ghost" onClick={() => setStep((s) => s - 1)}>Back</button> : null}
                 {step < 3 ? (
-                  <button type="button" className="btn btn-primary" onClick={() => setStep((s) => s + 1)}>Continue</button>
+                  <button type="button" className="btn btn-primary" onClick={goNext}>Continue</button>
                 ) : (
                   <button type="submit" className="btn btn-primary">Submit Request</button>
                 )}
-                <a className="btn btn-ghost" href="https://easy.doctly.in/" target="_blank" rel="noopener noreferrer">Or book on Doctly</a>
               </div>
             </form>
           )}

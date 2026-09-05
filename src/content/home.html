@@ -1,4 +1,10 @@
 <section class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <picture>
+      <source media="(max-width: 760px)" srcset="/images/hero-bg-mobile.webp">
+      <img src="/images/hero-bg.webp" alt="">
+    </picture>
+  </div>
   <div class="hero-grid">
     <div class="hero-copy-col">
       <div class="hero-tag"><span class="dot"></span>Gorakhpur &middot; Skin &middot; Hair &middot; Laser</div>
@@ -11,13 +17,6 @@
       <div class="hero-loc">
         <div><strong>Betiahata Road</strong>Near Hanuman Temple, Gorakhpur</div>
         <div><strong>Mon&ndash;Sat, 10 AM&ndash;8 PM</strong>General clinic hours</div>
-      </div>
-    </div>
-    <div class="hero-visual reveal">
-      <div class="hero-frame"><img src="/images/hero-consultation.jpg" alt="Dermatology consultation at Mukhija Skin & Laser Clinic"></div>
-      <div class="floating-card">
-        <span class="fc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
-        <div><strong>Same-week consultations</strong><span>Mon&ndash;Sat &middot; 12&ndash;3 PM &amp; 4&ndash;6 PM</span></div>
       </div>
     </div>
   </div>
@@ -36,7 +35,7 @@
 
 <section>
   <div class="wrap split">
-    <div class="split-media reveal"><img src="/images/clinic-interior.jpg" alt="Dermatology clinic consultation setting"></div>
+    <div class="split-media reveal"><img src="/images/clinic-interior.webp" alt="Reception and waiting area at Mukhija Skin &amp; Laser Clinic"></div>
     <div>
       <div class="eyebrow">Where experience meets modern dermatology</div>
       <h2>A dermatology practice built across two generations</h2>
@@ -59,7 +58,7 @@
     </div>
     <div class="doctor-grid">
       <div class="doctor-card reveal">
-        <div class="doctor-photo"><img src="/images/doctor-rd-mukhija.webp" alt="Dr. R. D. Mukhija"></div>
+        <div class="doctor-photo"><img src="/images/doctor-rd-aligned.webp" alt="Dr. R. D. Mukhija"></div>
         <div class="doctor-body">
           <div class="role">Founder &middot; Senior Dermatologist</div>
           <h3>Dr. R. D. Mukhija</h3>
@@ -69,7 +68,7 @@
         </div>
       </div>
       <div class="doctor-card reveal">
-        <div class="doctor-photo"><img src="/images/doctor-gaurav-mukhija.webp" alt="Dr. Gaurav Mukhija"></div>
+        <div class="doctor-photo"><img src="/images/doctor-gaurav-aligned.webp" alt="Dr. Gaurav Mukhija"></div>
         <div class="doctor-body">
           <div class="role">Dermatologist &middot; Cosmetic &amp; Laser Specialist</div>
           <h3>Dr. Gaurav Mukhija</h3>
@@ -88,63 +87,31 @@
       <div class="eyebrow">What we treat</div>
       <h2>Featured Treatments</h2>
     </div>
-    <div class="treat-grid">
-      <article class="treat-card" data-cat="Skin">
-      <div class="treat-media"><span class="treat-cat">Skin</span><img src="/images/acne-scars.jpg" alt="Acne &amp; Acne Scars" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Acne &amp; Acne Scars</h3><p>Chemical peels and laser technologies such as MedLite C6 and AcuPulse CO2, matched to your skin.</p>
-        <a href="acne-scar-treatment-gorakhpur.html" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Laser">
-      <div class="treat-media"><span class="treat-cat">Laser</span><img src="/images/open-pores.jpg" alt="Open Pores Treatment" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Open Pores Treatment</h3><p>Combined AcuPulse CO2 and MedLite C6 laser therapy to visibly reduce enlarged pores.</p>
-        <a href="open-pores-treatment-gorakhpur.html" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Skin">
-      <div class="treat-media"><span class="treat-cat">Skin</span><img src="/images/pigmentation.jpg" alt="Pigmentation &amp; Melasma" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Pigmentation &amp; Melasma</h3><p>Evaluation and laser-based treatment for uneven pigmentation and melasma.</p>
-        <a href="treatments.html#skin" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Hair">
-      <div class="treat-media"><span class="treat-cat">Hair</span><img src="/images/hair-fall-prp.jpg" alt="Hair Fall &amp; PRP" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Hair Fall &amp; PRP</h3><p>Personalised approaches to hair loss, including PRP therapy for hair growth.</p>
-        <a href="treatments.html#hair" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Skin">
-      <div class="treat-media"><span class="treat-cat">Skin</span><img src="/images/skin-rejuvenation.jpg" alt="Skin Rejuvenation" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Skin Rejuvenation</h3><p>Laser-based treatments designed to improve overall skin texture and appearance.</p>
-        <a href="treatments.html#skin" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Laser">
-      <div class="treat-media"><span class="treat-cat">Laser</span><img src="/images/tattoo-removal.jpg" alt="Tattoo Removal" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Tattoo Removal</h3><p>Laser-based tattoo removal using our in-house Q-switched Nd:YAG system.</p>
-        <a href="treatments.html#laser" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Medical">
-      <div class="treat-media"><span class="treat-cat">Medical</span><img src="/images/medical-dermatology.jpg" alt="Vitiligo Care" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Vitiligo Care</h3><p>Medical dermatological management for vitiligo, including UVB and UVA phototherapy.</p>
-        <a href="vitiligo-treatment-gorakhpur.html" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
-      <article class="treat-card" data-cat="Skin">
-      <div class="treat-media"><span class="treat-cat">Skin</span><img src="/images/wrinkles-ageing.jpg" alt="Wrinkles &amp; Ageing" loading="lazy"></div>
-      <div class="treat-body">
-        <h3>Wrinkles &amp; Ageing</h3><p>Modern dermatological approaches for fine lines, wrinkles and ageing skin.</p>
-        <a href="treatments.html#skin" class="treat-link">Learn More <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-      </div>
-    </article>
+    <div class="treat-grid treat-feature-grid">
+      <a class="treat-feature" href="acne-scar-treatment-gorakhpur.html">
+        <img src="/images/treatments/acne-acne-scars.webp" alt="Acne &amp; Acne Scars treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="open-pores-treatment-gorakhpur.html">
+        <img src="/images/treatments/open-pores.webp" alt="Open Pores Treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="treatments.html#skin">
+        <img src="/images/treatments/pigmentation-melasma.webp" alt="Pigmentation &amp; Melasma treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="treatments.html#hair">
+        <img src="/images/treatments/hair-fall-prp.webp" alt="Hair Fall &amp; PRP treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="treatments.html#skin">
+        <img src="/images/treatments/skin-rejuvenation.webp" alt="Skin Rejuvenation treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="treatments.html#laser">
+        <img src="/images/treatments/tattoo-removal.webp" alt="Tattoo Removal treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="vitiligo-treatment-gorakhpur.html">
+        <img src="/images/treatments/vitiligo-care.webp" alt="Vitiligo Care treatment" loading="lazy">
+      </a>
+      <a class="treat-feature" href="treatments.html#skin">
+        <img src="/images/treatments/wrinkles-ageing.webp" alt="Wrinkles &amp; Ageing treatment" loading="lazy">
+      </a>
     </div>
     <div style="text-align:center; margin-top:44px;"><a href="treatments.html" class="btn btn-ghost">View All Treatments</a></div>
   </div>

@@ -18,6 +18,7 @@ import {
   VitiligoPage,
 } from "./pages/RecoveredPages";
 import { absoluteAssetUrl, appPathFromLocation, assetUrl, withBase } from "./paths";
+import { FACEBOOK_URL, INSTAGRAM_URL } from "./social";
 
 const IMAGE = absoluteAssetUrl("og-image.png");
 const LOGO = assetUrl("logo.png");
@@ -45,6 +46,7 @@ const clinicSchema = {
   }],
   medicalSpecialty: "Dermatology",
   url: "https://www.mukhijaskinclinic.com/",
+  sameAs: [INSTAGRAM_URL, FACEBOOK_URL],
 };
 
 function normalizeContentUrls(html) {
@@ -52,7 +54,8 @@ function normalizeContentUrls(html) {
     if (file === "index") return `href="${withBase(`/${hash}`)}"`;
     return `href="${withBase(`/${file}/${hash}`)}"`;
   }).replace(/href="(?!https?:|tel:|mailto:|#|\/mukhijaskinandlaser)(\/[^"]*)"/g, (_, path) => `href="${withBase(path)}"`)
-    .replace(/src="(\/[^"]*)"/g, (_, path) => `src="${assetUrl(path)}"`);
+    .replace(/src="(\/[^"]*)"/g, (_, path) => `src="${assetUrl(path)}"`)
+    .replace(/srcset="(\/[^"]*)"/g, (_, path) => `srcset="${assetUrl(path)}"`);
 }
 
 const pages = {
@@ -454,6 +457,36 @@ function NavDropdown({ menu, isOpen, onOpen, onClose, onToggle }) {
   );
 }
 
+function SocialIcon({ network }) {
+  if (network === "facebook") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M14.5 8.5V6.8c0-.7.5-1.3 1.2-1.3H17V3h-2.1C12.4 3 11 4.5 11 6.6v1.9H9v2.6h2V21h3.5v-9.9h2.3l.4-2.6h-2.7z" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function SocialLinks({ className = "social-links" }) {
+  return (
+    <div className={className}>
+      <a href={INSTAGRAM_URL} className="icon-btn" target="_blank" rel="noopener noreferrer" aria-label="Mukhija Skin &amp; Laser Clinic on Instagram">
+        <SocialIcon network="instagram" />
+      </a>
+      <a href={FACEBOOK_URL} className="icon-btn" target="_blank" rel="noopener noreferrer" aria-label="Mukhija Skin &amp; Laser Clinic on Facebook">
+        <SocialIcon network="facebook" />
+      </a>
+    </div>
+  );
+}
+
 function Header({ open, setOpen }) {
   const [openMenu, setOpenMenu] = useState(null);
   const navRef = useRef(null);
@@ -495,6 +528,7 @@ function Header({ open, setOpen }) {
             <a href={withBase("/contact-us/")}>Contact</a>
           </nav>
           <div className="header-actions">
+            <SocialLinks className="social-links header-social" />
             <a href="tel:+919554220700" className="icon-btn" aria-label="Call the clinic">☎</a>
             <a href={withBase("/book-appointment/")} className="btn btn-primary btn-sm">Book Appointment</a>
             <button className="icon-btn nav-toggle" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}>☰</button>
@@ -523,6 +557,7 @@ function Header({ open, setOpen }) {
         <div className="m-cta">
           <a href={withBase("/book-appointment/")} className="btn btn-primary btn-block">Book Appointment</a>
           <a href="tel:+919554220700" className="btn btn-ghost btn-block">Call +91-9554220700</a>
+          <SocialLinks className="social-links drawer-social" />
         </div>
       </aside>
     </>
@@ -538,6 +573,7 @@ function Footer() {
             <div className="footer-brand">
               <div className="brand"><BrandMark /></div>
               <p>A dermatologist-led skin, hair and laser clinic on Betiahata Road, Gorakhpur — built on more than three decades of clinical dermatology experience.</p>
+              <SocialLinks className="social-links footer-social" />
             </div>
             <div className="foot-col"><h4>Clinic</h4><ul><li><a href={withBase("/about-clinic/")}>About Us</a></li><li><a href={withBase("/dr-r-d-mukhija/")}>Dr. R. D. Mukhija</a></li><li><a href={withBase("/dr-gaurav-mukhija-2/")}>Dr. Gaurav Mukhija</a></li><li><a href={withBase("/#technology")}>Technology</a></li></ul></div>
             <div className="foot-col"><h4>Treatments</h4><ul><li><a href={withBase("/acne-scar-treatment-gorakhpur/")}>Acne Scar Treatment</a></li><li><a href={withBase("/open-pores-treatment-gorakhpur/")}>Open Pores Treatment</a></li><li><a href={withBase("/treatments/#hair")}>Hair Fall &amp; PRP</a></li><li><a href={withBase("/treatments/")}>View All Treatments</a></li></ul></div>
@@ -604,6 +640,9 @@ function App() {
       filterButtons.forEach((button) => button.classList.toggle("active", button === event.currentTarget));
       document.querySelectorAll(".treat-card").forEach((card) => {
         card.hidden = category !== "all" && card.dataset.cat !== category;
+      });
+      document.querySelectorAll(".treat-group").forEach((group) => {
+        group.hidden = category !== "all" && group.dataset.group !== category;
       });
     };
     filterButtons.forEach((button) => button.addEventListener("click", onFilter));
