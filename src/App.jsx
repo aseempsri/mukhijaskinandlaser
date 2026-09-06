@@ -17,6 +17,7 @@ import {
   OpenPoresPage,
   VitiligoPage,
 } from "./pages/RecoveredPages";
+import { AppointmentStatusPage, DoctorDashboardPage } from "./pages/DoctorDashboard";
 import { absoluteAssetUrl, appPathFromLocation, assetUrl, withBase } from "./paths";
 import { FACEBOOK_URL, INSTAGRAM_URL } from "./social";
 
@@ -164,6 +165,19 @@ const pages = {
     description: "Request an appointment at Mukhija Skin & Laser Clinic, Gorakhpur. Mon–Sat consultation windows 12–3 PM and 4–6 PM.",
     canonical: "/book-appointment/",
   },
+  doctorDashboard: {
+    kind: "component",
+    Component: DoctorDashboardPage,
+    title: "Doctor Dashboard | Mukhija Skin & Laser Clinic",
+    description: "Secure doctor dashboard for appointment requests at Mukhija Skin & Laser Clinic.",
+    canonical: "/doctor-dashboard/",
+  },
+  appointmentStatus: {
+    kind: "status",
+    title: "Appointment Status | Mukhija Skin & Laser Clinic",
+    description: "Track your appointment request status at Mukhija Skin & Laser Clinic.",
+    canonical: "/appointment-status/",
+  },
   notFound: {
     kind: "component",
     Component: NotFoundPage,
@@ -218,9 +232,25 @@ const routeMap = {
   "/book-appointment": "book",
   "/book-appointment/": "book",
   "/book-appointment.html": "book",
+  "/doctor-dashboard": "doctorDashboard",
+  "/doctor-dashboard/": "doctorDashboard",
   "/404": "notFound",
   "/404.html": "notFound",
 };
+
+function resolvePageKey(path) {
+  if (routeMap[path]) return routeMap[path];
+  if (path === "/doctor-dashboard" || path.startsWith("/doctor-dashboard/")) return "doctorDashboard";
+  if (/^\/appointment-status\/[^/]+\/?$/.test(path)) return "appointmentStatus";
+  return "notFound";
+}
+
+function isAppRoute(path) {
+  if (path === "/" || path in routeMap) return true;
+  if (path.startsWith("/doctor-dashboard")) return true;
+  if (/^\/appointment-status\/[^/]+\/?$/.test(path)) return true;
+  return false;
+}
 
 function setMeta(selector, attribute, value) {
   let element = document.head.querySelector(selector);
@@ -598,9 +628,15 @@ function App() {
       return true;
     }
   });
-  const pageKey = routeMap[path] ?? "notFound";
+  const pageKey = resolvePageKey(path);
   const page = pages[pageKey];
-  useSeo(page);
+  const statusToken = useMemo(() => {
+    const match = String(path || "").match(/^\/appointment-status\/([^/]+)\/?$/);
+    return match ? decodeURIComponent(match[1]) : null;
+  }, [path]);
+  useSeo(pageKey === "appointmentStatus"
+    ? { ...page, canonical: `/appointment-status/${statusToken || ""}/` }
+    : page);
 
   const completeIntro = () => {
     try {
@@ -617,7 +653,7 @@ function App() {
       const anchor = event.target.closest("a");
       if (!anchor || anchor.target || anchor.protocol !== window.location.protocol || anchor.host !== window.location.host) return;
       const appPath = appPathFromLocation(anchor.pathname);
-      if (!(appPath in routeMap) && appPath !== "/") return;
+      if (!isAppRoute(appPath)) return;
       event.preventDefault();
       window.history.pushState({}, "", `${withBase(appPath)}${anchor.hash}`);
       setPath(appPath);
@@ -638,7 +674,7 @@ function App() {
     const onFilter = (event) => {
       const category = event.currentTarget.dataset.filter;
       filterButtons.forEach((button) => button.classList.toggle("active", button === event.currentTarget));
-      document.querySelectorAll(".treat-card").forEach((card) => {
+      document.querySelectorAll(".treat-card[data-cat], .treat-feature[data-cat]").forEach((card) => {
         card.hidden = category !== "all" && card.dataset.cat !== category;
       });
       document.querySelectorAll(".treat-group").forEach((group) => {
@@ -713,16 +749,21 @@ function App() {
     if (page.kind === "html") {
       return <main id="main" dangerouslySetInnerHTML={{ __html: page.html }} />;
     }
+    if (page.kind === "status") {
+      return <AppointmentStatusPage token={statusToken} />;
+    }
     const Component = page.Component;
     return <Component />;
-  }, [page]);
+  }, [page, statusToken]);
+
+  const isDoctorArea = pageKey === "doctorDashboard";
 
   return (
     <>
       <Header open={drawerOpen} setOpen={setDrawerOpen} />
       {content}
-      <Footer />
-      {showIntro ? <IntroSplash onComplete={completeIntro} /> : null}
+      {isDoctorArea ? null : <Footer />}
+      {showIntro && !isDoctorArea ? <IntroSplash onComplete={completeIntro} /> : null}
     </>
   );
 }

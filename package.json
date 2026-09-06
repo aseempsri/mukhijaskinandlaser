@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "npm --prefix server run dev",
+    "server:start": "npm --prefix server run start",
+    "seed": "npm --prefix server run seed",
+    "dev:all": "npm run server & npm run dev"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",

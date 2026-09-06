@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "../api";
 import { assetUrl, withBase } from "../paths";
 import { FACEBOOK_URL, INSTAGRAM_URL } from "../social";
 
@@ -510,45 +511,184 @@ export function ContactPage() {
   );
 }
 
+function todayIso() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+}
+
 export function BookAppointmentPage() {
   const [step, setStep] = useState(1);
+  const [services, setServices] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(null);
+  const [stepError, setStepError] = useState("");
+  const [bootError, setBootError] = useState("");
+  const [photos, setPhotos] = useState([]);
   const [form, setForm] = useState({
-    name: "",
+    serviceId: "",
+    doctorId: "",
+    appointmentDate: todayIso(),
+    startTime: "",
+    endTime: "",
+    fullName: "",
     phone: "",
     email: "",
-    concern: "General consultation",
-    preferred: "12 PM – 03 PM",
-    notes: "",
+    age: "",
+    gender: "",
+    primaryConcern: "",
+    duration: "",
+    previousTreatment: false,
+    previousTreatmentDetails: "",
+    additionalNotes: "",
+    consent: false,
   });
-  const [submitted, setSubmitted] = useState(false);
-  const [stepError, setStepError] = useState("");
+
+  useEffect(() => {
+    Promise.all([api.getServices(), api.getDoctors()])
+      .then(([serviceData, doctorData]) => {
+        setServices(serviceData.services || []);
+        setDoctors(doctorData.doctors || []);
+        setForm((current) => ({
+          ...current,
+          serviceId: current.serviceId || serviceData.services?.[0]?._id || "",
+          doctorId: current.doctorId || doctorData.doctors?.[0]?._id || "",
+        }));
+      })
+      .catch((error) => {
+        setBootError(error.message || "Unable to load booking options. Is the API running?");
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!form.doctorId || !form.appointmentDate || !form.serviceId) return;
+    let cancelled = false;
+    setLoadingSlots(true);
+    setStepError("");
+    api
+      .getAvailableSlots({
+        doctorId: form.doctorId,
+        date: form.appointmentDate,
+        serviceId: form.serviceId,
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setSlots(data.slots || []);
+        setForm((current) => {
+          const stillValid = (data.slots || []).some((slot) => slot.startTime === current.startTime);
+          if (stillValid) return current;
+          return { ...current, startTime: "", endTime: "" };
+        });
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setSlots([]);
+          setStepError(error.message);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.doctorId, form.appointmentDate, form.serviceId]);
+
+  const selectedService = useMemo(
+    () => services.find((item) => item._id === form.serviceId),
+    [services, form.serviceId],
+  );
+  const selectedDoctor = useMemo(
+    () => doctors.find((item) => item._id === form.doctorId),
+    [doctors, form.doctorId],
+  );
 
   const update = (field) => (event) => {
     setStepError("");
-    setForm((current) => ({ ...current, [field]: event.target.value }));
+    const value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
+    setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const canLeaveStep1 = () => form.name.trim() !== "" && form.phone.trim() !== "";
+  const chooseSlot = (slot) => {
+    setStepError("");
+    setForm((current) => ({
+      ...current,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }));
+  };
 
-  const goNext = (event) => {
-    if (step === 1 && !canLeaveStep1()) {
-      event.currentTarget.form?.reportValidity();
-      setStepError("Please enter your full name and phone number to continue. Email is optional.");
+  const validateStep = (currentStep) => {
+    if (currentStep === 1) {
+      if (!form.serviceId || !form.doctorId) return "Please choose a service and doctor.";
+    }
+    if (currentStep === 2) {
+      if (!form.appointmentDate || !form.startTime) return "Please select a date and an available time slot.";
+    }
+    if (currentStep === 3) {
+      if (!form.fullName.trim() || !form.phone.trim()) return "Full name and phone are required.";
+    }
+    if (currentStep === 4) {
+      if (!form.primaryConcern.trim()) return "Please describe your primary concern.";
+      if (!form.consent) return "Consent is required to submit an appointment request.";
+    }
+    return "";
+  };
+
+  const goNext = () => {
+    const message = validateStep(step);
+    if (message) {
+      setStepError(message);
       return;
     }
     setStepError("");
-    setStep((current) => current + 1);
+    setStep((current) => Math.min(5, current + 1));
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
-    if (!canLeaveStep1()) {
-      setStep(1);
-      setStepError("Please enter your full name and phone number to continue. Email is optional.");
+    const message = validateStep(4) || validateStep(3) || validateStep(2) || validateStep(1);
+    if (message) {
+      setStepError(message);
       return;
     }
-    console.info("Appointment request (frontend only — wire to API/CRM before go-live):", form);
-    setSubmitted(true);
+    setSubmitting(true);
+    setStepError("");
+    try {
+      const payload = {
+        serviceId: form.serviceId,
+        doctorId: form.doctorId,
+        appointmentDate: form.appointmentDate,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        patient: {
+          fullName: form.fullName.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim(),
+          age: form.age ? Number(form.age) : null,
+          gender: form.gender || null,
+          whatsappOptIn: true,
+          emailOptIn: Boolean(form.email.trim()),
+        },
+        questionnaire: {
+          primaryConcern: form.primaryConcern.trim(),
+          duration: form.duration,
+          previousTreatment: form.previousTreatment,
+          previousTreatmentDetails: form.previousTreatmentDetails,
+          additionalNotes: form.additionalNotes,
+          symptoms: [],
+        },
+        consent: { given: true, version: "2026-01" },
+        patientNotes: form.additionalNotes || form.primaryConcern,
+      };
+      const result = await api.createAppointment(payload, photos);
+      setSubmitted(result.appointment);
+    } catch (error) {
+      setStepError(error.message || "Unable to submit appointment request.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -556,100 +696,181 @@ export function BookAppointmentPage() {
       <PageHero
         eyebrow="Online appointment request"
         title="Book an Appointment"
-        lede="Consultation windows: Monday–Saturday, 12 PM–03 PM and 04 PM–06 PM. Submitting this form is a request only — our team confirms by phone or WhatsApp."
+        lede="Consultation windows: Monday–Saturday, 12 PM–03 PM and 04 PM–06 PM. Submitting this form creates a request — your dermatologist confirms the appointment."
       />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap wrap-narrow">
-          {submitted ? (
+          {bootError ? (
+            <div className="side-card">
+              <h2>Booking temporarily unavailable</h2>
+              <p className="form-error">{bootError}</p>
+              <p>Start the API with <code>npm run server</code>, then refresh this page. You can also call +91-9554220700.</p>
+            </div>
+          ) : null}
+
+          {!bootError && submitted ? (
             <div className="side-card">
               <h2>Request received</h2>
               <p>
-                Thank you, {form.name || "patient"}. This prototype stores the request in the browser
-                console only. Call or WhatsApp +91-9554220700 to confirm, or use the clinic’s online
-                booking system.
+                Thank you, {form.fullName}. Your request <strong>{submitted.appointmentNumber}</strong> is
+                {" "}<strong>PENDING</strong> for {submitted.date} at {submitted.startTime}.
               </p>
+              <p>You will receive confirmation once the doctor reviews it.</p>
               <div className="hero-ctas">
-                <a className="btn btn-primary" href="https://easy.doctly.in/" target="_blank" rel="noopener noreferrer">Open Doctly Booking</a>
+                <a className="btn btn-primary" href={withBase(submitted.statusUrl)}>Track status</a>
                 <a className="btn btn-ghost" href="tel:+919554220700">Call the Clinic</a>
               </div>
             </div>
-          ) : (
+          ) : null}
+
+          {!bootError && !submitted ? (
             <form className="appointment-form" onSubmit={onSubmit}>
-              <div className="stepper" aria-live="polite">Step {step} of 3</div>
+              <div className="stepper" aria-live="polite">Step {step} of 5</div>
+
               {step === 1 && (
+                <div className="form-grid">
+                  <label className="full">
+                    Service
+                    <select required value={form.serviceId} onChange={update("serviceId")}>
+                      {services.map((service) => (
+                        <option key={service._id} value={service._id}>{service.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="full">
+                    Doctor
+                    <select required value={form.doctorId} onChange={update("doctorId")}>
+                      {doctors.map((doctor) => (
+                        <option key={doctor._id} value={doctor._id}>{doctor.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="form-grid">
+                  <label className="full">
+                    Preferred date
+                    <input type="date" required min={todayIso()} value={form.appointmentDate} onChange={update("appointmentDate")} />
+                  </label>
+                  <div className="full">
+                    <span className="slot-label">Available times</span>
+                    {loadingSlots ? <p className="dash-muted">Loading slots…</p> : null}
+                    {!loadingSlots && !slots.length ? <p className="form-error">No open slots on this date. Try another day.</p> : null}
+                    <div className="slot-grid">
+                      {slots.map((slot) => (
+                        <button
+                          key={`${slot.startTime}-${slot.endTime}`}
+                          type="button"
+                          className={`slot-chip ${form.startTime === slot.startTime ? "active" : ""}`}
+                          onClick={() => chooseSlot(slot)}
+                        >
+                          {slot.startTime}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
                 <div className="form-grid">
                   <label>
                     Full name
-                    <input
-                      required
-                      name="name"
-                      autoComplete="name"
-                      value={form.name}
-                      onChange={update("name")}
-                      aria-required="true"
-                    />
+                    <input required name="name" autoComplete="name" value={form.fullName} onChange={update("fullName")} />
                   </label>
                   <label>
                     Phone
-                    <input
-                      required
-                      name="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={form.phone}
-                      onChange={update("phone")}
-                      aria-required="true"
-                    />
+                    <input required name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={update("phone")} />
                   </label>
                   <label>
                     Email <span className="optional-hint">(optional)</span>
                     <input name="email" type="email" autoComplete="email" value={form.email} onChange={update("email")} />
                   </label>
+                  <label>
+                    Age <span className="optional-hint">(optional)</span>
+                    <input name="age" type="number" min="1" max="120" value={form.age} onChange={update("age")} />
+                  </label>
+                  <label>
+                    Gender <span className="optional-hint">(optional)</span>
+                    <select value={form.gender} onChange={update("gender")}>
+                      <option value="">Prefer not to say</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </label>
                 </div>
               )}
-              {step === 2 && (
+
+              {step === 4 && (
                 <div className="form-grid">
-                  <label>
-                    Concern
-                    <select value={form.concern} onChange={update("concern")}>
-                      <option>General consultation</option>
-                      <option>Acne / acne scars</option>
-                      <option>Open pores</option>
-                      <option>Hair fall / PRP</option>
-                      <option>Laser / aesthetic</option>
-                      <option>Medical dermatology</option>
-                    </select>
+                  <label className="full">
+                    Primary concern
+                    <textarea required rows={3} value={form.primaryConcern} onChange={update("primaryConcern")} />
                   </label>
                   <label>
-                    Preferred window
-                    <select value={form.preferred} onChange={update("preferred")}>
-                      <option>12 PM – 03 PM</option>
-                      <option>04 PM – 06 PM</option>
-                    </select>
+                    How long has this been present?
+                    <input value={form.duration} onChange={update("duration")} placeholder="e.g. 3 months" />
                   </label>
-                  <label className="full">Notes<textarea rows={4} value={form.notes} onChange={update("notes")} /></label>
+                  <label className="checkbox-row">
+                    <input type="checkbox" checked={form.previousTreatment} onChange={update("previousTreatment")} />
+                    I have tried treatment for this before
+                  </label>
+                  {form.previousTreatment ? (
+                    <label className="full">
+                      Previous treatment details
+                      <textarea rows={2} value={form.previousTreatmentDetails} onChange={update("previousTreatmentDetails")} />
+                    </label>
+                  ) : null}
+                  <label className="full">
+                    Additional notes <span className="optional-hint">(optional)</span>
+                    <textarea rows={3} value={form.additionalNotes} onChange={update("additionalNotes")} />
+                  </label>
+                  <label className="full">
+                    Photos <span className="optional-hint">(optional, JPEG/PNG/WebP, max 5)</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      onChange={(event) => setPhotos([...event.target.files].slice(0, 5))}
+                    />
+                  </label>
+                  <label className="full checkbox-row">
+                    <input type="checkbox" required checked={form.consent} onChange={update("consent")} />
+                    I consent to Mukhija Skin &amp; Laser Clinic storing my details and optional photos to process this appointment request.
+                  </label>
                 </div>
               )}
-              {step === 3 && (
+
+              {step === 5 && (
                 <div className="side-card" style={{ marginBottom: 18 }}>
                   <h3>Review your request</h3>
-                  <p><strong>{form.name}</strong> · {form.phone}</p>
+                  <p><strong>{form.fullName}</strong> · {form.phone}</p>
                   <p>{form.email || "No email provided"}</p>
-                  <p>{form.concern} · {form.preferred}</p>
-                  {form.notes ? <p>{form.notes}</p> : null}
+                  <p>{selectedService?.name} with {selectedDoctor?.name}</p>
+                  <p>{form.appointmentDate} · {form.startTime}–{form.endTime}</p>
+                  <p>{form.primaryConcern}</p>
+                  {photos.length ? <p>{photos.length} photo(s) attached</p> : null}
                 </div>
               )}
+
               {stepError ? <p className="form-error" role="alert">{stepError}</p> : null}
               <div className="hero-ctas">
-                {step > 1 ? <button type="button" className="btn btn-ghost" onClick={() => setStep((s) => s - 1)}>Back</button> : null}
-                {step < 3 ? (
+                {step > 1 ? (
+                  <button type="button" className="btn btn-ghost" onClick={() => setStep((current) => current - 1)}>Back</button>
+                ) : null}
+                {step < 5 ? (
                   <button type="button" className="btn btn-primary" onClick={goNext}>Continue</button>
                 ) : (
-                  <button type="submit" className="btn btn-primary">Submit Request</button>
+                  <button type="submit" className="btn btn-primary" disabled={submitting}>
+                    {submitting ? "Submitting…" : "Submit Request"}
+                  </button>
                 )}
               </div>
             </form>
-          )}
+          ) : null}
         </div>
       </section>
     </main>

@@ -18,6 +18,7 @@ const routeNames = [
   "before-after",
   "contact-us",
   "book-appointment",
+  "doctor-dashboard",
   "404",
 ];
 const legacyRoutes = routeNames.flatMap((route) => [`${route}.html`, `${route}/index.html`]);
@@ -42,4 +43,16 @@ export default defineConfig(({ command }) => ({
   // Project Pages URL: https://aseempsri.github.io/mukhijaskinandlaser/
   base: command === "build" ? "/mukhijaskinandlaser/" : "/",
   plugins: [react(), emitRouteFallbacks()],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:4000",
+        changeOrigin: true,
+      },
+      "/uploads": {
+        target: "http://127.0.0.1:4000",
+        changeOrigin: true,
+      },
+    },
+  },
 }));
