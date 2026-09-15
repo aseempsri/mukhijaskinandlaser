@@ -63,3 +63,12 @@ Use `EMAIL_PROVIDER=console` to disable real sending (logs only).
 
 Patient emails require an email on the booking form. New request alerts also go to `EMAIL_STAFF_TO` (default: appointments@).
 
+## Appointment reminders
+
+Reminder jobs run automatically when the server starts:
+
+- **24-hour reminder** — runs daily at 8 PM IST, sends email/WhatsApp reminders for next day's approved appointments
+- **2-hour reminder** — runs every 30 minutes, sends WhatsApp reminders for appointments 1–3 hours ahead
+
+Reminders only send to approved appointments and skip if already sent (idempotent). Patients must have opted in to email/WhatsApp notifications.
+

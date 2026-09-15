@@ -96,6 +96,8 @@ export const api = {
   completeAppointment: (id, doctorNotes) =>
     request(`/doctor/appointments/${id}/complete`, { method: "POST", body: { doctorNotes } }),
   noShowAppointment: (id) => request(`/doctor/appointments/${id}/no-show`, { method: "POST", body: {} }),
+  cancelAppointment: (id, reason) =>
+    request(`/doctor/appointments/${id}/cancel`, { method: "POST", body: { reason } }),
   doctorAvailability: () => request("/doctor/availability"),
   createAvailability: (body) => request("/doctor/availability", { method: "POST", body }),
   patchAvailability: (id, body) => request(`/doctor/availability/${id}`, { method: "PATCH", body }),
