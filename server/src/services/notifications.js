@@ -282,4 +282,89 @@ export const NotificationService = {
       });
     }
   },
+
+  async sendAppointmentCancelled({ appointment, patient, doctor, reason, cancelledBy }) {
+    const body = `Dear ${patient.fullName},\n\nYour appointment ${appointment.appointmentNumber} scheduled for ${appointment.appointmentDate.toISOString().slice(0, 10)} at ${appointment.startTime} has been cancelled.${reason ? `\n\nReason: ${reason}` : ""}\n\nFor any questions, contact us at +91-9554220700.\n\n${env.clinicName}`;
+    
+    if (patient.email && patient.emailOptIn) {
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "patient",
+        recipientId: patient._id,
+        channel: "email",
+        eventType: "APPOINTMENT_CANCELLED",
+        subject: `Appointment cancelled — ${appointment.appointmentNumber}`,
+        body,
+        sendFn: () => sendEmail({ to: patient.email, subject: `Appointment cancelled — ${appointment.appointmentNumber}`, body }),
+      });
+    }
+    if (patient.whatsappOptIn) {
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "patient",
+        recipientId: patient._id,
+        channel: "whatsapp",
+        eventType: "APPOINTMENT_CANCELLED",
+        subject: "Appointment cancelled",
+        body,
+        sendFn: () => sendWhatsApp({ to: patient.phone, body }),
+      });
+    }
+
+    if (cancelledBy === "patient") {
+      const doctorBody = `Appointment ${appointment.appointmentNumber} cancelled by patient.\n\nPatient: ${patient.fullName}\nPhone: ${patient.phone}\nDate: ${appointment.appointmentDate.toISOString().slice(0, 10)} at ${appointment.startTime}${reason ? `\nReason: ${reason}` : ""}`;
+      for (const to of doctorEmailRecipients(doctor)) {
+        await recordAndSend({
+          appointmentId: appointment._id,
+          recipientType: "doctor",
+          recipientId: doctor._id,
+          channel: "email",
+          eventType: "APPOINTMENT_CANCELLED",
+          subject: `Patient cancelled — ${appointment.appointmentNumber}`,
+          body: doctorBody,
+          sendFn: () => sendEmail({ to, subject: `Patient cancelled — ${appointment.appointmentNumber}`, body: doctorBody }),
+        });
+      }
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "doctor",
+        recipientId: doctor._id,
+        channel: "dashboard",
+        eventType: "APPOINTMENT_CANCELLED",
+        subject: "Patient cancelled appointment",
+        body: doctorBody,
+        sendFn: async () => ({ provider: "dashboard", ok: true }),
+      });
+    }
+  },
+
+  async sendAppointmentReminder({ appointment, patient, doctor, service, hoursBeforeType }) {
+    const reminderLabel = hoursBeforeType === "24h" ? "tomorrow" : "in 2 hours";
+    const body = `Dear ${patient.fullName},\n\nReminder: Your appointment ${appointment.appointmentNumber} for ${service.name} with ${doctor.name} is ${reminderLabel}.\n\nDate: ${appointment.appointmentDate.toISOString().slice(0, 10)}\nTime: ${appointment.startTime}\n\nAddress: ${env.clinicAddress || "Mukhija Skin & Laser Clinic, Gorakhpur"}\n\nSee you soon!\n${env.clinicName}\nPhone: +91-9554220700`;
+    
+    if (patient.email && patient.emailOptIn) {
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "patient",
+        recipientId: patient._id,
+        channel: "email",
+        eventType: `APPOINTMENT_REMINDER_${hoursBeforeType.toUpperCase()}`,
+        subject: `Appointment reminder — ${appointment.appointmentNumber}`,
+        body,
+        sendFn: () => sendEmail({ to: patient.email, subject: `Appointment reminder — ${appointment.appointmentNumber}`, body }),
+      });
+    }
+    if (patient.whatsappOptIn) {
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "patient",
+        recipientId: patient._id,
+        channel: "whatsapp",
+        eventType: `APPOINTMENT_REMINDER_${hoursBeforeType.toUpperCase()}`,
+        subject: "Appointment reminder",
+        body,
+        sendFn: () => sendWhatsApp({ to: patient.phone, body }),
+      });
+    }
+  },
 };

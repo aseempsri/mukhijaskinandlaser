@@ -8,6 +8,7 @@ import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import authRoutes from "./routes/auth.js";
 import publicRoutes from "./routes/public.js";
 import doctorRoutes from "./routes/doctor.js";
+import { startReminderJobs } from "./jobs/reminders.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,6 +33,7 @@ async function main() {
 
   app.listen(env.port, () => {
     console.log(`Appointment API listening on http://localhost:${env.port}`);
+    startReminderJobs();
   });
 }
 

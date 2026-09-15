@@ -26,7 +26,7 @@ function StatusPill({ status }) {
 
 function LoginPanel({ onSuccess }) {
   const [email, setEmail] = useState("doctor@mukhijaskinclinic.com");
-  const [password, setPassword] = useState("Doctor@123");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -248,6 +248,20 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
               </button>
             </>
           )}
+          {(appointment.status === "PENDING" || appointment.status === "APPROVED" || appointment.status === "RESCHEDULE_REQUESTED") && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={busy}
+              onClick={() => {
+                if (confirm("Cancel this appointment? The patient will be notified.")) {
+                  act(() => api.cancelAppointment(appointmentId, rejectReason || "Cancelled by clinic"));
+                }
+              }}
+            >
+              Cancel
+            </button>
+          )}
         </div>
         {(appointment.status === "PENDING" || appointment.status === "APPROVED" || appointment.status === "RESCHEDULE_REQUESTED") && (
           <div className="form-grid" style={{ marginTop: 18, marginBottom: 0 }}>
@@ -448,6 +462,7 @@ export function DoctorDashboardPage() {
   const [summary, setSummary] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [list, setList] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [error, setError] = useState("");
 
   const applyDoctorSelection = (doctor) => {
@@ -496,6 +511,9 @@ export function DoctorDashboardPage() {
       } else if (tab === "all") {
         const data = await api.doctorAppointments();
         setList(data.appointments || []);
+      } else if (tab === "notifications") {
+        const data = await api.doctorNotifications();
+        setNotifications(data.notifications || []);
       }
     } catch (err) {
       if (err.status === 401) {
@@ -604,6 +622,7 @@ export function DoctorDashboardPage() {
               ["pending", "Pending"],
               ["today", "Today"],
               ["all", "All"],
+              ["notifications", "Notifications"],
               ["availability", "Availability"],
             ].map(([id, label]) => (
               <button
@@ -665,6 +684,26 @@ export function DoctorDashboardPage() {
           ) : null}
 
           {!selectedId && tab === "availability" ? <AvailabilityPanel key={activeDoctor.id} /> : null}
+
+          {!selectedId && tab === "notifications" ? (
+            <div className="dash-stack">
+              <h2 className="dash-section-title">Notification center</h2>
+              <div className="dash-list-panel">
+                {notifications.map((notif) => (
+                  <div key={notif._id} className="dash-row">
+                    <div>
+                      <strong>{notif.eventType}</strong>
+                      <p className="dash-muted">
+                        {notif.channel} · {notif.status} · {new Date(notif.createdAt).toLocaleString("en-IN")}
+                      </p>
+                      {notif.subject ? <p>{notif.subject}</p> : null}
+                    </div>
+                  </div>
+                ))}
+                {!notifications.length ? <p className="dash-muted">No notifications yet.</p> : null}
+              </div>
+            </div>
+          ) : null}
         </div>
       </section>
     </main>

@@ -13,6 +13,7 @@ export const env = {
   authSecret: process.env.AUTH_SECRET || "dev-secret",
   clinicTimezone: process.env.CLINIC_TIMEZONE || "Asia/Kolkata",
   clinicName: process.env.CLINIC_NAME || "Mukhija Skin & Laser Clinic",
+  clinicAddress: process.env.CLINIC_ADDRESS || "Mukhija Skin & Laser Clinic, Gorakhpur",
   emailProvider: process.env.EMAIL_PROVIDER || "console",
   emailFrom: process.env.EMAIL_FROM || "appointments@drmukhijaskinclinic.com",
   emailReplyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM || "appointments@drmukhijaskinclinic.com",

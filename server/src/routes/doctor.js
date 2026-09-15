@@ -11,6 +11,7 @@ import { Notification } from "../models/Notification.js";
 import { Patient } from "../models/Patient.js";
 import { PatientImage } from "../models/PatientImage.js";
 import { PatientQuestionnaire } from "../models/PatientQuestionnaire.js";
+import { assertSlotAvailable } from "../services/availability.js";
 import { NotificationService, notifyInBackground } from "../services/notifications.js";
 import { addMinutesToTime, formatDateOnly, parseDateOnly } from "../utils/time.js";
 
@@ -133,6 +134,14 @@ router.post("/appointments/:id/approve", async (req, res, next) => {
       error.status = 409;
       throw error;
     }
+
+    await assertSlotAvailable({
+      doctorId: String(appointment.doctorId._id),
+      date: formatDateOnly(appointment.appointmentDate),
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
+    });
+
     const fromStatus = appointment.status;
     appointment.status = "APPROVED";
     appointment.approvedAt = new Date();
@@ -268,6 +277,40 @@ router.post("/appointments/:id/no-show", async (req, res, next) => {
       fromStatus,
       toStatus: "NO_SHOW",
       changedByUserId: req.user._id,
+    });
+    res.json({ success: true, appointment });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/appointments/:id/cancel", async (req, res, next) => {
+  try {
+    const appointment = await loadOwnedAppointment(req, req.params.id);
+    if (appointment.status === "CANCELLED" || appointment.status === "COMPLETED") {
+      const error = new Error(`Cannot cancel appointment with status ${appointment.status}.`);
+      error.status = 409;
+      throw error;
+    }
+    const reason = req.body.reason || null;
+    const fromStatus = appointment.status;
+    appointment.status = "CANCELLED";
+    appointment.cancelledAt = new Date();
+    appointment.cancellationReason = reason;
+    await appointment.save();
+    await AppointmentStatusHistory.create({
+      appointmentId: appointment._id,
+      fromStatus,
+      toStatus: "CANCELLED",
+      changedByUserId: req.user._id,
+      note: reason,
+    });
+    await NotificationService.sendAppointmentCancelled({
+      appointment,
+      patient: appointment.patientId,
+      doctor: appointment.doctorId,
+      reason,
+      cancelledBy: "doctor",
     });
     res.json({ success: true, appointment });
   } catch (error) {

@@ -123,6 +123,48 @@ router.get("/appointments/status/:token", async (req, res, next) => {
   }
 });
 
+router.post("/appointments/cancel/:token", async (req, res, next) => {
+  try {
+    const appointment = await Appointment.findOne({ publicToken: req.params.token })
+      .populate("doctorId")
+      .populate("serviceId")
+      .populate("patientId");
+    if (!appointment) return res.status(404).json({ success: false, message: "Appointment not found." });
+    
+    if (appointment.status === "CANCELLED" || appointment.status === "COMPLETED") {
+      const error = new Error(`Cannot cancel appointment with status ${appointment.status}.`);
+      error.status = 409;
+      throw error;
+    }
+
+    const reason = req.body.reason || "Cancelled by patient";
+    const fromStatus = appointment.status;
+    appointment.status = "CANCELLED";
+    appointment.cancelledAt = new Date();
+    appointment.cancellationReason = reason;
+    await appointment.save();
+
+    await AppointmentStatusHistory.create({
+      appointmentId: appointment._id,
+      fromStatus,
+      toStatus: "CANCELLED",
+      note: reason,
+    });
+
+    await NotificationService.sendAppointmentCancelled({
+      appointment,
+      patient: appointment.patientId,
+      doctor: appointment.doctorId,
+      reason,
+      cancelledBy: "patient",
+    });
+
+    res.json({ success: true, message: "Appointment cancelled successfully." });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/appointments", upload.array("photos", 5), async (req, res, next) => {
   try {
     const raw = req.body.payload ? JSON.parse(req.body.payload) : req.body;
