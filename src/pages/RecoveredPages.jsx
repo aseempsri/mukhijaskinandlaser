@@ -523,6 +523,7 @@ export function BookAppointmentPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(null);
+  const [emailNotice, setEmailNotice] = useState(null);
   const [stepError, setStepError] = useState("");
   const [bootError, setBootError] = useState("");
   const [photos, setPhotos] = useState([]);
@@ -594,6 +595,35 @@ export function BookAppointmentPage() {
       cancelled = true;
     };
   }, [form.doctorId, form.appointmentDate, form.serviceId]);
+
+  useEffect(() => {
+    if (!submitted?.publicToken || emailNotice !== "pending") return undefined;
+    let cancelled = false;
+    let attempts = 0;
+    let timer = 0;
+    const poll = async () => {
+      attempts += 1;
+      try {
+        const data = await api.getAppointmentStatus(submitted.publicToken);
+        const status = data.appointment?.emailNotice?.status;
+        if (cancelled) return;
+        if (status === "sent" || status === "failed" || status === "none") {
+          setEmailNotice(status);
+          return;
+        }
+      } catch {
+        // keep waiting; a slow send is not a failure
+      }
+      if (cancelled) return;
+      if (attempts >= 90) return;
+      timer = window.setTimeout(poll, 1000);
+    };
+    timer = window.setTimeout(poll, 400);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [submitted, emailNotice]);
 
   const selectedService = useMemo(
     () => services.find((item) => item._id === form.serviceId),
@@ -683,6 +713,7 @@ export function BookAppointmentPage() {
         patientNotes: form.additionalNotes || form.primaryConcern,
       };
       const result = await api.createAppointment(payload, photos);
+      setEmailNotice(form.email.trim() ? "pending" : "none");
       setSubmitted(result.appointment);
     } catch (error) {
       setStepError(error.message || "Unable to submit appointment request.");
@@ -716,6 +747,9 @@ export function BookAppointmentPage() {
                 {" "}<strong>PENDING</strong> for {submitted.date} at {submitted.startTime}.
               </p>
               <p>You will receive confirmation once the doctor reviews it.</p>
+              {emailNotice === "failed" ? (
+                <p className="form-error" role="alert">Email sharing failed. Please call the clinic to confirm this request.</p>
+              ) : null}
               <div className="hero-ctas">
                 <a className="btn btn-primary" href={withBase(submitted.statusUrl)}>Track status</a>
                 <a className="btn btn-ghost" href="tel:+919554220700">Call the Clinic</a>

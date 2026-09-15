@@ -11,7 +11,7 @@ import { Notification } from "../models/Notification.js";
 import { Patient } from "../models/Patient.js";
 import { PatientImage } from "../models/PatientImage.js";
 import { PatientQuestionnaire } from "../models/PatientQuestionnaire.js";
-import { NotificationService } from "../services/notifications.js";
+import { NotificationService, notifyInBackground } from "../services/notifications.js";
 import { addMinutesToTime, formatDateOnly, parseDateOnly } from "../utils/time.js";
 
 const router = Router();
@@ -145,12 +145,14 @@ router.post("/appointments/:id/approve", async (req, res, next) => {
       changedByUserId: req.user._id,
       note: req.body.doctorNotes || null,
     });
-    await NotificationService.sendAppointmentApproved({
-      appointment,
-      patient: appointment.patientId,
-      doctor: appointment.doctorId,
-      service: appointment.serviceId,
-    });
+    notifyInBackground(() =>
+      NotificationService.sendAppointmentApproved({
+        appointment,
+        patient: appointment.patientId,
+        doctor: appointment.doctorId,
+        service: appointment.serviceId,
+      })
+    );
     res.json({ success: true, appointment });
   } catch (error) {
     next(error);
@@ -178,11 +180,13 @@ router.post("/appointments/:id/reject", async (req, res, next) => {
       changedByUserId: req.user._id,
       note: reason,
     });
-    await NotificationService.sendAppointmentRejected({
-      appointment,
-      patient: appointment.patientId,
-      reason,
-    });
+    notifyInBackground(() =>
+      NotificationService.sendAppointmentRejected({
+        appointment,
+        patient: appointment.patientId,
+        reason,
+      })
+    );
     res.json({ success: true, appointment });
   } catch (error) {
     next(error);
@@ -213,13 +217,15 @@ router.post("/appointments/:id/reschedule", async (req, res, next) => {
       changedByUserId: req.user._id,
       note: body.reason || `Proposed ${body.proposedDate} ${body.proposedStartTime}`,
     });
-    await NotificationService.sendAppointmentRescheduled({
-      appointment,
-      patient: appointment.patientId,
-      proposedDate: body.proposedDate,
-      proposedTime: body.proposedStartTime,
-      reason: body.reason,
-    });
+    notifyInBackground(() =>
+      NotificationService.sendAppointmentRescheduled({
+        appointment,
+        patient: appointment.patientId,
+        proposedDate: body.proposedDate,
+        proposedTime: body.proposedStartTime,
+        reason: body.reason,
+      })
+    );
     res.json({ success: true, appointment });
   } catch (error) {
     if (error.name === "ZodError") {

@@ -11,8 +11,9 @@ import { Appointment } from "../models/Appointment.js";
 import { AppointmentStatusHistory } from "../models/AppointmentStatusHistory.js";
 import { PatientQuestionnaire } from "../models/PatientQuestionnaire.js";
 import { PatientImage } from "../models/PatientImage.js";
+import { Notification } from "../models/Notification.js";
 import { assertSlotAvailable, getAvailableSlots } from "../services/availability.js";
-import { NotificationService } from "../services/notifications.js";
+import { NotificationService, notifyInBackground } from "../services/notifications.js";
 import {
   addMinutesToTime,
   createAppointmentNumber,
@@ -92,6 +93,12 @@ router.get("/appointments/status/:token", async (req, res, next) => {
       .populate("serviceId", "name durationMinutes")
       .populate("patientId", "fullName phone email");
     if (!appointment) return res.status(404).json({ success: false, message: "Appointment not found." });
+    const patientEmailNotice = await Notification.findOne({
+      appointmentId: appointment._id,
+      recipientType: "patient",
+      channel: "email",
+      eventType: "APPOINTMENT_REQUESTED",
+    }).sort({ createdAt: -1 });
     res.json({
       success: true,
       appointment: {
@@ -106,6 +113,9 @@ router.get("/appointments/status/:token", async (req, res, next) => {
           fullName: appointment.patientId.fullName,
           phone: appointment.patientId.phone,
         },
+        emailNotice: patientEmailNotice
+          ? { status: patientEmailNotice.status, error: patientEmailNotice.errorMessage || null }
+          : { status: appointment.patientId.email ? "pending" : "none" },
       },
     });
   } catch (error) {
@@ -245,7 +255,9 @@ router.post("/appointments", upload.array("photos", 5), async (req, res, next) =
     patient.lastAppointmentAt = new Date();
     await patient.save();
 
-    await NotificationService.sendAppointmentRequested({ appointment, patient, doctor, service });
+    notifyInBackground(() =>
+      NotificationService.sendAppointmentRequested({ appointment, patient, doctor, service })
+    );
 
     res.status(201).json({
       success: true,
