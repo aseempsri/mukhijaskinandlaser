@@ -20,7 +20,7 @@ export const env = {
   /** Clinic inbox that receives new appointment-request alerts */
   emailStaffTo: process.env.EMAIL_STAFF_TO || "appointments@drmukhijaskinclinic.com",
   smtp: {
-    host: process.env.SMTP_HOST || "smtp.titan.email",
+    host: process.env.SMTP_HOST || "smtpout.secureserver.net",
     port: Number(process.env.SMTP_PORT || 465),
     secure: String(process.env.SMTP_SECURE || "true").toLowerCase() !== "false",
     user: process.env.SMTP_USER || "",

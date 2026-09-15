@@ -121,6 +121,14 @@ function doctorEmailRecipients(doctor) {
   return [...new Set(recipients.filter(Boolean))];
 }
 
+export function notifyInBackground(task) {
+  Promise.resolve()
+    .then(task)
+    .catch((error) => {
+      console.error("Background notification failed:", error);
+    });
+}
+
 export const NotificationService = {
   async sendAppointmentRequested({ appointment, patient, doctor, service }) {
     const summary = formatAppt(appointment, {
