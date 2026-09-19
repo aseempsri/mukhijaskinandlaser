@@ -74,7 +74,7 @@ router.get("/appointments", async (req, res, next) => {
       .populate("patientId", "fullName phone email")
       .populate("serviceId", "name durationMinutes")
       .populate("doctorId", "name title")
-      .sort({ appointmentDate: 1, startTime: 1 });
+      .sort({ createdAt: -1 });
     res.json({ success: true, appointments });
   } catch (error) {
     next(error);
@@ -104,7 +104,6 @@ router.get("/appointments/today", async (req, res, next) => {
     const appointments = await Appointment.find({
       ...doctorScope(req),
       appointmentDate: date,
-      status: { $in: ["APPROVED", "PENDING"] },
     })
       .populate("patientId", "fullName phone")
       .populate("serviceId", "name")
@@ -589,7 +588,6 @@ router.get("/dashboard/summary", async (req, res, next) => {
         appointmentDate: parseDateOnly(
           new Date().toLocaleString("en-CA", { timeZone: "Asia/Kolkata" }).slice(0, 10)
         ),
-        status: { $in: ["APPROVED", "PENDING"] },
       })
         .populate("patientId", "fullName phone")
         .populate("serviceId", "name")
