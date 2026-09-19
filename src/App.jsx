@@ -29,8 +29,8 @@ const clinicSchema = {
   name: "Mukhija Skin & Laser Clinic",
   image: absoluteAssetUrl("og-image.png"),
   logo: absoluteAssetUrl("logo.png"),
-  telephone: ["+91-9554220700", "0551-2347093"],
-  email: "mukhijagaurav@yahoo.co.in",
+  telephone: "+91-9554220700",
+  email: "contact@drmukhijaskinclinic.com",
   address: {
     "@type": "PostalAddress",
     streetAddress: "Betiahata Road, Near Hanuman Temple, Betiahata",
@@ -39,12 +39,20 @@ const clinicSchema = {
     postalCode: "273001",
     addressCountry: "IN",
   },
-  openingHoursSpecification: [{
-    "@type": "OpeningHoursSpecification",
-    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-    opens: "10:00",
-    closes: "20:00",
-  }],
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "12:00",
+      closes: "15:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "16:00",
+      closes: "18:00",
+    },
+  ],
   medicalSpecialty: "Dermatology",
   url: "https://www.mukhijaskinclinic.com/",
   sameAs: [INSTAGRAM_URL, FACEBOOK_URL],

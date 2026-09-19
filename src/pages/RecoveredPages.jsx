@@ -477,14 +477,22 @@ export function ContactPage() {
             <h3>Clinic Address</h3>
             <p>Betiahata Road, Near Hanuman Temple,<br />Betiahata, Gorakhpur, Uttar Pradesh 273001</p>
             <h3>Opening Hours</h3>
-            <p>Mon–Sat: 10:00 AM – 08:00 PM<br />Sunday: Closed</p>
+            <p>
+              Monday–Saturday,
+              <br className="br-mobile-only" />
+              {" "}12 PM–03 PM and 04 PM–06 PM.
+              <br />
+              Sunday: Closed
+            </p>
             <h3>Call / Email</h3>
             <p>
-              <a href="tel:05512347093">0551-2347093</a>
-              {" · "}
+              Phone / WhatsApp:{" "}
               <a href="tel:+919554220700">+91-9554220700</a>
+              {" · "}
+              <a href="https://wa.me/919554220700" target="_blank" rel="noopener noreferrer">WhatsApp</a>
               <br />
-              <a href="mailto:mukhijagaurav@yahoo.co.in">mukhijagaurav@yahoo.co.in</a>
+              Email:{" "}
+              <a href="mailto:contact@drmukhijaskinclinic.com">contact@drmukhijaskinclinic.com</a>
             </p>
             <h3>Follow Us</h3>
             <p>
