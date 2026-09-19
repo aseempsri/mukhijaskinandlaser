@@ -367,7 +367,6 @@ section { padding: 96px 0; }
     position: relative;
     z-index: 1;
   }
-}
   section { padding: 70px 0; }
   .wrap, .wrap-narrow { width: min(100% - 30px, 1180px); }
   .header-inner { width: calc(100% - 24px); min-height: 76px; }

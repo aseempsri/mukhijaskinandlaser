@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const routeNames = [
@@ -24,17 +24,28 @@ const routeNames = [
 const legacyRoutes = routeNames.flatMap((route) => [`${route}.html`, `${route}/index.html`]);
 
 function emitRouteFallbacks() {
+  const writeFallbacks = (outDir) => {
+    const indexHtml = resolve(outDir, "index.html");
+    if (!existsSync(indexHtml)) {
+      console.warn(`[emit-route-fallbacks] ${indexHtml} missing — skipping route copies`);
+      return;
+    }
+    for (const route of legacyRoutes) {
+      const destination = resolve(outDir, route);
+      mkdirSync(dirname(destination), { recursive: true });
+      copyFileSync(indexHtml, destination);
+    }
+    copyFileSync(indexHtml, resolve(outDir, "404.html"));
+  };
+
   return {
     name: "emit-route-fallbacks",
-    closeBundle() {
-      const indexHtml = resolve("dist/index.html");
-      for (const route of legacyRoutes) {
-        const destination = resolve("dist", route);
-        mkdirSync(dirname(destination), { recursive: true });
-        copyFileSync(indexHtml, destination);
-      }
-      // GitHub Pages serves 404.html for unknown deep links — keep the SPA shell there.
-      copyFileSync(indexHtml, resolve("dist/404.html"));
+    apply: "build",
+    enforce: "post",
+    // writeBundle runs after assets/HTML are on disk (more reliable than closeBundle on Vite 8).
+    writeBundle(options) {
+      const outDir = options.dir ? resolve(options.dir) : resolve("dist");
+      writeFallbacks(outDir);
     },
   };
 }
