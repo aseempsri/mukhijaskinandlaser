@@ -34,14 +34,14 @@ fs.mkdirSync(uploadDir, { recursive: true });
 
 const bookingLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 12,
+  max: 200,
   keyFn: (req) => clientKey(req, "booking"),
   message: "Too many booking attempts. Please wait a few minutes and try again.",
 });
 
 const statusActionLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: 200,
   keyFn: (req) => clientKey(req, "status-action"),
   message: "Too many requests. Please wait and try again.",
 });

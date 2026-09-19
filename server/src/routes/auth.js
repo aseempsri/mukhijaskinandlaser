@@ -9,7 +9,7 @@ import { clientKey, rateLimit } from "../middleware/rateLimit.js";
 const router = Router();
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 200,
   keyFn: (req) => clientKey(req, `login:${String(req.body?.email || "").toLowerCase()}`),
   message: "Too many login attempts. Please wait and try again.",
 });
