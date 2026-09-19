@@ -360,7 +360,14 @@ section { padding: 96px 0; }
 }
 
 @media (max-width: 760px) {
-  body { padding-bottom: 62px; }
+  body { padding-bottom: 72px; }
+  .appointment-form .hero-ctas {
+    margin-top: 22px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+}
   section { padding: 70px 0; }
   .wrap, .wrap-narrow { width: min(100% - 30px, 1180px); }
   .header-inner { width: calc(100% - 24px); min-height: 76px; }
@@ -398,7 +405,7 @@ section { padding: 96px 0; }
   .hero-tag,
   .hero h1,
   .hero-copy,
-  .hero-ctas,
+  .hero .hero-ctas,
   .hero-loc {
     display: none !important;
   }
