@@ -680,7 +680,90 @@ section { padding: 96px 0; }
   justify-content: space-between;
   gap: 12px;
 }
-.dash-muted { color: var(--ink-soft); font-size: 0.86rem; }
+.form-success { color: #2f6b4f; margin: 0; }
+.status-reschedule-box {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid rgba(165, 121, 58, 0.35);
+  background: rgba(165, 121, 58, 0.08);
+}
+.analytics-bars { display: grid; gap: 8px; }
+.analytics-bar-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.82rem;
+}
+.analytics-bar-label { color: var(--ink-soft); }
+.analytics-bar-track {
+  height: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+.analytics-bar-fill {
+  height: 100%;
+  background: var(--accent, #a5793a);
+  min-width: 2px;
+}
+.staff-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.staff-check-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent, #a5793a);
+}
+.staff-check-inline {
+  gap: 8px;
+  white-space: nowrap;
+}
+.form-grid .staff-check-label.full {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+.staff-table-wrap {
+  overflow-x: auto;
+}
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.staff-table th,
+.staff-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  vertical-align: middle;
+}
+.staff-table th {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.03);
+}
+.staff-td-index {
+  width: 3rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.staff-td-action {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
+.staff-count {
+  margin: 10px 0 0;
+}
+
 .dash-stack { display: grid; gap: 18px; }
 .dash-detail { display: grid; gap: 16px; }
 .dash-detail-actions {

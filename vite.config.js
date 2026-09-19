@@ -40,16 +40,12 @@ function emitRouteFallbacks() {
 }
 
 export default defineConfig(({ command }) => ({
-  // Project Pages URL: https://aseempsri.github.io/mukhijaskinandlaser/
-  base: command === "build" ? "/mukhijaskinandlaser/" : "/",
+  // Hostinger/domain root. For GitHub Pages set VITE_BASE=/mukhijaskinandlaser/ when building.
+  base: command === "build" ? process.env.VITE_BASE || "/" : "/",
   plugins: [react(), emitRouteFallbacks()],
   server: {
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:4000",
-        changeOrigin: true,
-      },
-      "/uploads": {
         target: "http://127.0.0.1:4000",
         changeOrigin: true,
       },

@@ -815,7 +815,7 @@ export function BookAppointmentPage() {
                     <input required name="name" autoComplete="name" value={form.fullName} onChange={update("fullName")} />
                   </label>
                   <label>
-                    Phone
+                    WhatsApp/Phone
                     <input required name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={update("phone")} />
                   </label>
                   <label>

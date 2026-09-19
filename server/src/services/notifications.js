@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
 import { Notification } from "../models/Notification.js";
+import { Staff } from "../models/Staff.js";
 
 let transporterPromise = null;
 
@@ -59,12 +60,107 @@ async function sendEmail({ to, subject, body }) {
   return { provider: env.emailProvider, ok: false, skipped: true };
 }
 
-async function sendWhatsApp({ to, body }) {
+function normalizeWhatsAppTo(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.startsWith("0") && digits.length === 11) return `91${digits.slice(1)}`;
+  return digits;
+}
+
+function formatWhatsAppDate(value) {
+  const raw = value?.toISOString?.().slice(0, 10) || String(value || "");
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return raw;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = Number(match[3]);
+  const month = months[Number(match[2]) - 1] || match[2];
+  return `${day} ${month} ${match[1]}`;
+}
+
+function formatWhatsAppTime(time) {
+  if (!time || !/^\d{2}:\d{2}$/.test(time)) return String(time || "");
+  const [h, m] = time.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 || 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+async function sendWhatsApp({ to, body, templateName, templateParams, headerParams }) {
   if (env.whatsappProvider === "console") {
-    console.log(`[whatsapp → ${to}] ${body}\n`);
+    console.log(`[whatsapp → ${to}] ${templateName || "text"}\n${body}\n`);
     return { provider: "console", ok: true };
   }
-  return { provider: env.whatsappProvider, ok: false, skipped: true };
+
+  if (env.whatsappProvider !== "meta") {
+    return { provider: env.whatsappProvider, ok: false, skipped: true };
+  }
+
+  if (!templateName) {
+    return {
+      provider: "meta",
+      ok: false,
+      skipped: true,
+      reason: "No approved WhatsApp template for this event",
+    };
+  }
+
+  const { phoneNumberId, accessToken, apiVersion, languageCode } = env.whatsapp;
+  if (!phoneNumberId || !accessToken || accessToken === "PASTE_YOUR_TOKEN_HERE") {
+    throw new Error("WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN must be set in server/.env");
+  }
+
+  const recipient = normalizeWhatsAppTo(to);
+  if (!recipient) {
+    return { provider: "meta", ok: false, skipped: true, reason: "missing recipient" };
+  }
+
+  const components = [];
+  if (headerParams?.length) {
+    components.push({
+      type: "header",
+      parameters: headerParams.map((text) => ({
+        type: "text",
+        text: String(text ?? "").slice(0, 60) || "-",
+      })),
+    });
+  }
+  components.push({
+    type: "body",
+    parameters: (templateParams || []).map((text) => ({
+      type: "text",
+      text: String(text ?? "").slice(0, 1024) || "-",
+    })),
+  });
+
+  const payload = {
+    messaging_product: "whatsapp",
+    to: recipient,
+    type: "template",
+    template: {
+      name: templateName,
+      language: { code: languageCode },
+      components,
+    },
+  };
+
+  const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = data?.error?.message || JSON.stringify(data);
+    throw new Error(`Meta WhatsApp API error: ${detail}`);
+  }
+
+  console.log(`[whatsapp → ${recipient}] template=${templateName} id=${data?.messages?.[0]?.id || "?"}`);
+  return { provider: "meta", ok: true, messageId: data?.messages?.[0]?.id, response: data };
 }
 
 async function recordAndSend({
@@ -152,16 +248,49 @@ export const NotificationService = {
         sendFn: () => sendEmail({ to, subject: `New appointment request — ${summary.number}`, body: doctorBody }),
       });
     }
-    await recordAndSend({
-      appointmentId: appointment._id,
-      recipientType: "doctor",
-      recipientId: doctor._id,
-      channel: "whatsapp",
-      eventType: "APPOINTMENT_REQUESTED",
-      subject: "New appointment request",
-      body: doctorBody,
-      sendFn: () => sendWhatsApp({ to: doctor.whatsappNumber, body: doctorBody }),
-    });
+
+    const optedInStaff = await Staff.find({
+      isActive: true,
+      receiveNewAppointmentWhatsApp: true,
+    }).select("name phone");
+
+    const staffWhatsAppTargets = [];
+    const seenPhones = new Set();
+    for (const member of optedInStaff) {
+      const phone = String(member.phone || "").trim();
+      if (!phone) continue;
+      const key = phone.replace(/\D/g, "");
+      if (seenPhones.has(key)) continue;
+      seenPhones.add(key);
+      staffWhatsAppTargets.push({ id: member._id, phone, name: member.name });
+    }
+
+    for (const member of staffWhatsAppTargets) {
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "staff",
+        recipientId: member.id,
+        channel: "whatsapp",
+        eventType: "APPOINTMENT_REQUESTED",
+        subject: `New appointment for ${member.name}`,
+        body: doctorBody,
+        sendFn: () =>
+          sendWhatsApp({
+            to: member.phone,
+            body: doctorBody,
+            templateName: env.whatsapp.templates.staffNew,
+            templateParams: [
+              summary.number,
+              summary.patient,
+              summary.phone,
+              summary.service,
+              formatWhatsAppDate(summary.date),
+              formatWhatsAppTime(summary.startTime),
+            ],
+          }),
+      });
+    }
+
     await recordAndSend({
       appointmentId: appointment._id,
       recipientType: "doctor",
@@ -194,13 +323,27 @@ export const NotificationService = {
         eventType: "APPOINTMENT_REQUESTED",
         subject: "Request received",
         body: patientBody,
-        sendFn: () => sendWhatsApp({ to: patient.phone, body: patientBody }),
+        sendFn: () =>
+          sendWhatsApp({
+            to: patient.phone,
+            body: patientBody,
+            templateName: env.whatsapp.templates.requested,
+            templateParams: [
+              summary.patient,
+              summary.number,
+              summary.service,
+              formatWhatsAppDate(summary.date),
+              formatWhatsAppTime(summary.startTime),
+            ],
+          }),
       });
     }
   },
 
   async sendAppointmentApproved({ appointment, patient, doctor, service }) {
-    const body = `Dear ${patient.fullName},\n\nYour appointment ${appointment.appointmentNumber} for ${service.name} with ${doctor.name} on ${appointment.appointmentDate.toISOString().slice(0, 10)} at ${appointment.startTime} is APPROVED.\n\nWe look forward to seeing you at ${env.clinicName}.\nPhone: +91-9554220700`;
+    const dateLabel = formatWhatsAppDate(appointment.appointmentDate);
+    const timeLabel = formatWhatsAppTime(appointment.startTime);
+    const body = `Dear ${patient.fullName},\n\nYour appointment ${appointment.appointmentNumber} for ${service.name} with ${doctor.name} on ${dateLabel} at ${timeLabel} is APPROVED.\n\nWe look forward to seeing you at ${env.clinicName}.\nPhone: +91-9554220700`;
     if (patient.email && patient.emailOptIn) {
       await recordAndSend({
         appointmentId: appointment._id,
@@ -222,12 +365,27 @@ export const NotificationService = {
         eventType: "APPOINTMENT_APPROVED",
         subject: "Appointment approved",
         body,
-        sendFn: () => sendWhatsApp({ to: patient.phone, body }),
+        sendFn: () =>
+          sendWhatsApp({
+            to: patient.phone,
+            body,
+            templateName: env.whatsapp.templates.approved,
+            templateParams: [
+              patient.fullName,
+              appointment.appointmentNumber,
+              service.name,
+              dateLabel,
+              timeLabel,
+            ],
+          }),
       });
     }
   },
 
-  async sendAppointmentRejected({ appointment, patient, reason }) {
+  async sendAppointmentRejected({ appointment, patient, service, reason }) {
+    const dateLabel = formatWhatsAppDate(appointment.appointmentDate);
+    const timeLabel = formatWhatsAppTime(appointment.startTime);
+    const serviceName = service?.name || "your consultation";
     const body = `Dear ${patient.fullName},\n\nYour appointment request ${appointment.appointmentNumber} could not be approved.${reason ? ` Reason: ${reason}` : ""}\n\nPlease call the clinic at +91-9554220700 to choose another slot.\n\n${env.clinicName}`;
     if (patient.email && patient.emailOptIn) {
       await recordAndSend({
@@ -250,13 +408,27 @@ export const NotificationService = {
         eventType: "APPOINTMENT_REJECTED",
         subject: "Appointment update",
         body,
-        sendFn: () => sendWhatsApp({ to: patient.phone, body }),
+        sendFn: () =>
+          sendWhatsApp({
+            to: patient.phone,
+            body,
+            templateName: env.whatsapp.templates.rejected,
+            templateParams: [
+              patient.fullName,
+              appointment.appointmentNumber,
+              serviceName,
+              dateLabel,
+              timeLabel,
+            ],
+          }),
       });
     }
   },
 
   async sendAppointmentRescheduled({ appointment, patient, proposedDate, proposedTime, reason }) {
-    const body = `Dear ${patient.fullName},\n\nPlease consider a new time for ${appointment.appointmentNumber}: ${proposedDate} at ${proposedTime}.${reason ? ` Note: ${reason}` : ""}\n\nReply via phone/WhatsApp at +91-9554220700 to confirm.\n\n${env.clinicName}`;
+    const dateLabel = formatWhatsAppDate(proposedDate);
+    const timeLabel = formatWhatsAppTime(proposedTime);
+    const body = `Dear ${patient.fullName},\n\nPlease consider a new time for ${appointment.appointmentNumber}: ${dateLabel} at ${timeLabel}.${reason ? ` Note: ${reason}` : ""}\n\nReply via phone/WhatsApp at +91-9554220700 to confirm.\n\n${env.clinicName}`;
     if (patient.email && patient.emailOptIn) {
       await recordAndSend({
         appointmentId: appointment._id,
@@ -278,7 +450,18 @@ export const NotificationService = {
         eventType: "APPOINTMENT_RESCHEDULE_REQUESTED",
         subject: "Reschedule suggested",
         body,
-        sendFn: () => sendWhatsApp({ to: patient.phone, body }),
+        sendFn: () =>
+          sendWhatsApp({
+            to: patient.phone,
+            body,
+            templateName: env.whatsapp.templates.reschedule,
+            templateParams: [
+              patient.fullName,
+              appointment.appointmentNumber,
+              dateLabel,
+              timeLabel,
+            ],
+          }),
       });
     }
   },

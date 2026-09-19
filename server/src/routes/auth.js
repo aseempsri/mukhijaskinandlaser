@@ -4,8 +4,15 @@ import { z } from "zod";
 import { User } from "../models/User.js";
 import { Doctor } from "../models/Doctor.js";
 import { requireAuth, signToken } from "../middleware/auth.js";
+import { clientKey, rateLimit } from "../middleware/rateLimit.js";
 
 const router = Router();
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  keyFn: (req) => clientKey(req, `login:${String(req.body?.email || "").toLowerCase()}`),
+  message: "Too many login attempts. Please wait and try again.",
+});
 
 async function serializeUser(user) {
   const canSwitchDoctors = !user.doctorId || user.role === "admin" || user.role === "receptionist";
@@ -29,7 +36,7 @@ async function serializeUser(user) {
   };
 }
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", loginLimiter, async (req, res, next) => {
   try {
     const schema = z.object({
       email: z.string().email(),

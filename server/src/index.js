@@ -1,7 +1,5 @@
 import express from "express";
 import cors from "cors";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { connectDb } from "./config/db.js";
 import { env } from "./config/env.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
@@ -10,15 +8,14 @@ import publicRoutes from "./routes/public.js";
 import doctorRoutes from "./routes/doctor.js";
 import { startReminderJobs } from "./jobs/reminders.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 async function main() {
   await connectDb();
   const app = express();
+  app.set("trust proxy", 1);
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true }));
-  app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
+  // Patient photos are NOT publicly served — only via authenticated /api/doctor/images/:id
 
   app.get("/api/health", (_req, res) => {
     res.json({ success: true, service: "mukhija-appointment-api", time: new Date().toISOString() });

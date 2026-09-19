@@ -188,6 +188,31 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
         <p><strong>{service?.name}</strong> with {doctor?.name}</p>
         <p>{formatDateLabel(appointment.appointmentDate)} · {appointment.startTime}–{appointment.endTime}</p>
         <p className="dash-muted">{appointment.appointmentNumber}</p>
+        {appointment.publicToken ? (
+          <div className="hero-ctas" style={{ marginTop: 10 }}>
+            <a
+              className="btn btn-ghost btn-sm"
+              href={`https://calendar.google.com/calendar/render?${new URLSearchParams({
+                action: "TEMPLATE",
+                text: `${service?.name || "Appointment"} — Mukhija Skin Clinic`,
+                dates: `${String(appointment.appointmentDate).slice(0, 10).replace(/-/g, "")}T${String(appointment.startTime).replace(":", "")}00/${String(appointment.appointmentDate).slice(0, 10).replace(/-/g, "")}T${String(appointment.endTime).replace(":", "")}00`,
+                ctz: "Asia/Kolkata",
+                details: appointment.appointmentNumber,
+                location: "Mukhija Skin & Laser Clinic, Gorakhpur",
+              }).toString()}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Google Calendar
+            </a>
+            <a
+              className="btn btn-ghost btn-sm"
+              href={`${(import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "")}/appointments/calendar/${appointment.publicToken}`}
+            >
+              Download .ics
+            </a>
+          </div>
+        ) : null}
         {appointment.patientNotes ? <p><em>Patient notes:</em> {appointment.patientNotes}</p> : null}
       </div>
 
@@ -328,6 +353,156 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
   );
 }
 
+function StaffPanel() {
+  const [staff, setStaff] = useState([]);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    receiveNewAppointmentWhatsApp: true,
+  });
+
+  const load = async () => {
+    setError("");
+    try {
+      const data = await api.listStaff();
+      setStaff(data.staff || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const addStaff = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await api.createStaff({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        receiveNewAppointmentWhatsApp: form.receiveNewAppointmentWhatsApp,
+      });
+      setForm({ name: "", phone: "", receiveNewAppointmentWhatsApp: true });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleNotify = async (row) => {
+    setError("");
+    try {
+      await api.patchStaff(row._id, {
+        receiveNewAppointmentWhatsApp: !row.receiveNewAppointmentWhatsApp,
+      });
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const removeStaff = async (row) => {
+    if (!window.confirm(`Remove ${row.name} from staff list?`)) return;
+    setError("");
+    try {
+      await api.deleteStaff(row._id);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    <div className="dash-stack">
+      <form className="appointment-form" onSubmit={addStaff}>
+        <div className="stepper">Add staff member</div>
+        <div className="form-grid">
+          <label>
+            Name
+            <input
+              required
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="Front desk"
+            />
+          </label>
+          <label>
+            WhatsApp / Phone
+            <input
+              required
+              value={form.phone}
+              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              placeholder="9876543210"
+            />
+          </label>
+          <label className="full staff-check-label">
+            <input
+              type="checkbox"
+              checked={form.receiveNewAppointmentWhatsApp}
+              onChange={(e) => setForm((f) => ({ ...f, receiveNewAppointmentWhatsApp: e.target.checked }))}
+            />
+            Send message on WhatsApp
+          </label>
+        </div>
+        {error ? <p className="form-error">{error}</p> : null}
+        <button type="submit" className="btn btn-primary" disabled={busy}>
+          {busy ? "Saving…" : "Add staff"}
+        </button>
+      </form>
+
+      {!staff.length ? (
+        <p className="dash-muted">No staff added yet. Add people above to enable WhatsApp alerts.</p>
+      ) : (
+        <div className="staff-table-wrap">
+          <table className="staff-table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Phone</th>
+                <th scope="col">WhatsApp</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {staff.map((row, index) => (
+                <tr key={row._id}>
+                  <td className="staff-td-index">{index + 1}</td>
+                  <td>{row.name}</td>
+                  <td>{row.phone}</td>
+                  <td>
+                    <label className="staff-check-label staff-check-inline">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(row.receiveNewAppointmentWhatsApp)}
+                        onChange={() => toggleNotify(row)}
+                      />
+                      <span>Send message</span>
+                    </label>
+                  </td>
+                  <td className="staff-td-action">
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeStaff(row)}>
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="dash-muted staff-count">{staff.length} staff member{staff.length === 1 ? "" : "s"}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AvailabilityPanel() {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
@@ -417,6 +592,95 @@ function AvailabilityPanel() {
           </div>
         ))}
         {!rows.length ? <p className="dash-muted">No availability windows yet.</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsPanel() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [days, setDays] = useState(30);
+
+  useEffect(() => {
+    setError("");
+    api.doctorAnalytics(days)
+      .then((res) => setData(res.analytics))
+      .catch((err) => setError(err.message));
+  }, [days]);
+
+  if (error) return <p className="form-error">{error}</p>;
+  if (!data) return <p>Loading analytics…</p>;
+
+  const maxDay = Math.max(1, ...data.byDay.map((d) => d.count));
+
+  return (
+    <div className="dash-stack">
+      <div className="dash-card-top">
+        <h2 className="dash-section-title" style={{ margin: 0 }}>Analytics</h2>
+        <label className="doctor-switch">
+          <span>Range</span>
+          <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
+            <option value={7}>7 days</option>
+            <option value={30}>30 days</option>
+            <option value={90}>90 days</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="dash-stats">
+        <div className="dash-stat"><span>Bookings</span><strong>{data.totals.total}</strong></div>
+        <div className="dash-stat"><span>Pending</span><strong>{data.totals.pending}</strong></div>
+        <div className="dash-stat"><span>Completed</span><strong>{data.totals.completed}</strong></div>
+        <div className="dash-stat"><span>No-shows</span><strong>{data.totals.noShow}</strong></div>
+      </div>
+
+      <div className="dash-stats">
+        <div className="dash-stat"><span>Completion rate</span><strong>{data.rates.completionRate}%</strong></div>
+        <div className="dash-stat"><span>No-show rate</span><strong>{data.rates.noShowRate}%</strong></div>
+        <div className="dash-stat"><span>Cancel rate</span><strong>{data.rates.cancelRate}%</strong></div>
+        <div className="dash-stat"><span>Rejected</span><strong>{data.totals.rejected}</strong></div>
+      </div>
+
+      <div className="side-card">
+        <h3>Bookings by day</h3>
+        <div className="analytics-bars">
+          {data.byDay.map((row) => (
+            <div key={row.date} className="analytics-bar-row" title={`${row.date}: ${row.count}`}>
+              <span className="analytics-bar-label">{row.date.slice(5)}</span>
+              <div className="analytics-bar-track">
+                <div className="analytics-bar-fill" style={{ width: `${(row.count / maxDay) * 100}%` }} />
+              </div>
+              <span className="analytics-bar-count">{row.count}</span>
+            </div>
+          ))}
+          {!data.byDay.length ? <p className="dash-muted">No bookings in this range.</p> : null}
+        </div>
+      </div>
+
+      <div className="side-card">
+        <h3>By status</h3>
+        <div className="dash-list-panel">
+          {data.byStatus.map((row) => (
+            <div key={row.status} className="dash-row">
+              <StatusPill status={row.status} />
+              <strong>{row.count}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="side-card">
+        <h3>Top services</h3>
+        <div className="dash-list-panel">
+          {data.byService.map((row) => (
+            <div key={row.name} className="dash-row">
+              <span>{row.name}</span>
+              <strong>{row.count}</strong>
+            </div>
+          ))}
+          {!data.byService.length ? <p className="dash-muted">No service data yet.</p> : null}
+        </div>
       </div>
     </div>
   );
@@ -622,7 +886,8 @@ export function DoctorDashboardPage() {
               ["pending", "Pending"],
               ["today", "Today"],
               ["all", "All"],
-              ["notifications", "Notifications"],
+              ["analytics", "Analytics"],
+              ["staff", "Staff"],
               ["availability", "Availability"],
             ].map(([id, label]) => (
               <button
@@ -684,6 +949,8 @@ export function DoctorDashboardPage() {
           ) : null}
 
           {!selectedId && tab === "availability" ? <AvailabilityPanel key={activeDoctor.id} /> : null}
+          {!selectedId && tab === "analytics" ? <AnalyticsPanel key={`${activeDoctor.id}-analytics`} /> : null}
+          {!selectedId && tab === "staff" ? <StaffPanel key="staff-panel" /> : null}
 
           {!selectedId && tab === "notifications" ? (
             <div className="dash-stack">
@@ -713,18 +980,41 @@ export function DoctorDashboardPage() {
 export function AppointmentStatusPage({ token }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
+  const load = () => {
     if (!token) {
       setError("Missing appointment token.");
       return;
     }
+    setError("");
     api.getAppointmentStatus(token)
       .then(setData)
       .catch((err) => setError(err.message));
+  };
+
+  useEffect(() => {
+    load();
   }, [token]);
 
+  const act = async (fn, successMessage) => {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      await fn();
+      setMessage(successMessage);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const appointment = data?.appointment;
+  const apiBase = import.meta.env.VITE_API_BASE || "/api";
 
   return (
     <main id="main">
@@ -738,6 +1028,7 @@ export function AppointmentStatusPage({ token }) {
       <section style={{ paddingTop: 0 }}>
         <div className="wrap wrap-narrow">
           {error ? <div className="side-card"><p className="form-error">{error}</p></div> : null}
+          {message ? <div className="side-card"><p className="form-success">{message}</p></div> : null}
           {!error && !appointment ? <div className="side-card"><p>Loading…</p></div> : null}
           {appointment ? (
             <div className="side-card">
@@ -757,12 +1048,64 @@ export function AppointmentStatusPage({ token }) {
               {appointment.status === "REJECTED" ? (
                 <p>This request could not be accommodated. Please call the clinic to book another slot.</p>
               ) : null}
-              {appointment.status === "RESCHEDULE_REQUESTED" ? (
-                <p>The clinic proposed a new time. Call or WhatsApp +91-9554220700 to confirm.</p>
+              {appointment.status === "CANCELLED" ? (
+                <p>This appointment was cancelled.</p>
               ) : null}
+              {appointment.status === "RESCHEDULE_REQUESTED" ? (
+                <div className="status-reschedule-box">
+                  <p>The clinic proposed this new time. Please accept or decline below.</p>
+                  {appointment.rescheduleReason ? (
+                    <p className="dash-muted">Note: {appointment.rescheduleReason}</p>
+                  ) : null}
+                  <div className="hero-ctas" style={{ marginTop: 12 }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={busy}
+                      onClick={() => act(() => api.acceptReschedule(token), "Reschedule accepted. Your visit is confirmed.")}
+                    >
+                      Accept new time
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      disabled={busy}
+                      onClick={() => act(() => api.declineReschedule(token), "Reschedule declined. You can book another slot.")}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {(appointment.status === "APPROVED" || appointment.status === "PENDING" || appointment.status === "RESCHEDULE_REQUESTED") && appointment.calendar ? (
+                <div className="hero-ctas" style={{ marginTop: 16 }}>
+                  <a className="btn btn-ghost" href={appointment.calendar.googleUrl} target="_blank" rel="noreferrer">
+                    Add to Google Calendar
+                  </a>
+                  <a className="btn btn-ghost" href={`${apiBase.replace(/\/$/, "")}/appointments/calendar/${token}`}>
+                    Download .ics
+                  </a>
+                </div>
+              ) : null}
+
               <div className="hero-ctas" style={{ marginTop: 18 }}>
                 <a className="btn btn-primary" href="tel:+919554220700">Call clinic</a>
                 <a className="btn btn-ghost" href={withBase("/book-appointment/")}>Book again</a>
+                {appointment.canCancel ? (
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    disabled={busy}
+                    onClick={() => {
+                      if (window.confirm("Cancel this appointment?")) {
+                        act(() => api.cancelAppointmentByToken(token), "Appointment cancelled.");
+                      }
+                    }}
+                  >
+                    Cancel appointment
+                  </button>
+                ) : null}
               </div>
             </div>
           ) : null}

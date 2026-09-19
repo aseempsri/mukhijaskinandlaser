@@ -9,7 +9,14 @@ import {
   timeToMinutes,
 } from "../utils/time.js";
 
-export async function getAvailableSlots({ doctorId, date, durationMinutes = 30 }) {
+const BLOCKING_STATUSES = ["PENDING", "APPROVED", "RESCHEDULE_REQUESTED"];
+
+export async function getAvailableSlots({
+  doctorId,
+  date,
+  durationMinutes = 30,
+  excludeAppointmentId = null,
+}) {
   const appointmentDate = parseDateOnly(date);
   const dow = dayOfWeekUtc(appointmentDate);
 
@@ -26,11 +33,16 @@ export async function getAvailableSlots({ doctorId, date, durationMinutes = 30 }
     windows = await DoctorAvailability.find({ doctorId, dayOfWeek: dow, isActive: true });
   }
 
-  const booked = await Appointment.find({
+  const bookedQuery = {
     doctorId,
     appointmentDate,
-    status: { $in: ["PENDING", "APPROVED", "RESCHEDULE_REQUESTED"] },
-  }).select("startTime endTime");
+    status: { $in: BLOCKING_STATUSES },
+  };
+  if (excludeAppointmentId) {
+    bookedQuery._id = { $ne: excludeAppointmentId };
+  }
+
+  const booked = await Appointment.find(bookedQuery).select("startTime endTime");
 
   const taken = booked.map((b) => ({
     start: timeToMinutes(b.startTime),
@@ -56,7 +68,13 @@ export async function getAvailableSlots({ doctorId, date, durationMinutes = 30 }
   return slots;
 }
 
-export async function assertSlotAvailable({ doctorId, date, startTime, endTime }) {
+export async function assertSlotAvailable({
+  doctorId,
+  date,
+  startTime,
+  endTime,
+  excludeAppointmentId = null,
+}) {
   const appointmentDate = parseDateOnly(date);
   if (isPastDateTime(appointmentDate, startTime)) {
     const error = new Error("Cannot book a time in the past.");
@@ -68,6 +86,7 @@ export async function assertSlotAvailable({ doctorId, date, startTime, endTime }
     doctorId,
     date: formatDateOnly(appointmentDate),
     durationMinutes: timeToMinutes(endTime) - timeToMinutes(startTime),
+    excludeAppointmentId,
   });
   const ok = slots.some((s) => s.startTime === startTime && s.endTime === endTime);
   if (!ok) {

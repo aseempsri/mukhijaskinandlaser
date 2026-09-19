@@ -37,7 +37,17 @@ const appointmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-appointmentSchema.index({ doctorId: 1, appointmentDate: 1, startTime: 1 });
+// Prevents two active bookings for the same doctor/date/start (race-safe).
+appointmentSchema.index(
+  { doctorId: 1, appointmentDate: 1, startTime: 1 },
+  {
+    unique: true,
+    name: "uniq_active_doctor_date_start",
+    partialFilterExpression: {
+      status: { $in: ["PENDING", "APPROVED", "RESCHEDULE_REQUESTED"] },
+    },
+  }
+);
 appointmentSchema.index({ patientId: 1, appointmentDate: -1 });
 appointmentSchema.index({ status: 1, createdAt: -1 });
 appointmentSchema.index({ appointmentDate: 1, status: 1 });

@@ -76,9 +76,16 @@ export const api = {
     return request("/appointments", { method: "POST", formData });
   },
   getAppointmentStatus: (token) => request(`/appointments/status/${token}`),
+  cancelAppointmentByToken: (token, reason) =>
+    request(`/appointments/cancel/${token}`, { method: "POST", body: { reason } }),
+  acceptReschedule: (token) =>
+    request(`/appointments/reschedule/${token}/accept`, { method: "POST", body: {} }),
+  declineReschedule: (token, reason) =>
+    request(`/appointments/reschedule/${token}/decline`, { method: "POST", body: { reason } }),
   login: (email, password) => request("/auth/login", { method: "POST", body: { email, password } }),
   me: () => request("/auth/me"),
   doctorSummary: () => request("/doctor/dashboard/summary"),
+  doctorAnalytics: (days = 30) => request(`/doctor/analytics?days=${days}`),
   doctorAppointments: (query = {}) => {
     const params = new URLSearchParams(query);
     const q = params.toString();
@@ -102,6 +109,10 @@ export const api = {
   createAvailability: (body) => request("/doctor/availability", { method: "POST", body }),
   patchAvailability: (id, body) => request(`/doctor/availability/${id}`, { method: "PATCH", body }),
   doctorNotifications: () => request("/doctor/notifications"),
+  listStaff: () => request("/doctor/staff"),
+  createStaff: (body) => request("/doctor/staff", { method: "POST", body }),
+  patchStaff: (id, body) => request(`/doctor/staff/${id}`, { method: "PATCH", body }),
+  deleteStaff: (id) => request(`/doctor/staff/${id}`, { method: "DELETE" }),
 };
 
 export async function fetchDoctorImageBlobUrl(imageId) {

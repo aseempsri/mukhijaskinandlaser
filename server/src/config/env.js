@@ -27,4 +27,19 @@ export const env = {
     pass: process.env.SMTP_PASS || "",
   },
   whatsappProvider: process.env.WHATSAPP_PROVIDER || "console",
+  whatsapp: {
+    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || "",
+    businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || "",
+    accessToken: process.env.WHATSAPP_ACCESS_TOKEN || "",
+    apiVersion: process.env.WHATSAPP_API_VERSION || "v21.0",
+    languageCode: process.env.WHATSAPP_TEMPLATE_LANGUAGE || "en",
+    staffTo: process.env.WHATSAPP_STAFF_TO || "",
+    templates: {
+      requested: process.env.WHATSAPP_TEMPLATE_REQUESTED || "appointment_request_received",
+      approved: process.env.WHATSAPP_TEMPLATE_APPROVED || "appointment_approved",
+      rejected: process.env.WHATSAPP_TEMPLATE_REJECTED || "appointment_rejected",
+      reschedule: process.env.WHATSAPP_TEMPLATE_RESCHEDULE || "appointment_reschedule",
+      staffNew: process.env.WHATSAPP_TEMPLATE_STAFF_NEW || "staff_new_appointment",
+    },
+  },
 };
