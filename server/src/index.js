@@ -7,9 +7,11 @@ import authRoutes from "./routes/auth.js";
 import publicRoutes from "./routes/public.js";
 import doctorRoutes from "./routes/doctor.js";
 import { startReminderJobs } from "./jobs/reminders.js";
+import { syncDashboardPasswordFromEnv } from "./services/dashboardAuth.js";
 
 async function main() {
   await connectDb();
+  await syncDashboardPasswordFromEnv();
   const app = express();
   app.set("trust proxy", 1);
   app.use(cors({ origin: true, credentials: true }));

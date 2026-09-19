@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { connectDb } from "./config/db.js";
+import { env } from "./config/env.js";
 import { User } from "./models/User.js";
 import { Doctor } from "./models/Doctor.js";
 import { Service } from "./models/Service.js";
@@ -8,6 +9,10 @@ import { ClinicSetting } from "./models/ClinicSetting.js";
 
 async function seed() {
   await connectDb();
+
+  if (!env.dashboardPass) {
+    throw new Error("Set DASHBOARD_PASS in server/.env before seeding.");
+  }
 
   await Promise.all([
     User.deleteMany({}),
@@ -38,10 +43,10 @@ async function seed() {
     },
   ]);
 
-  const passwordHash = await bcrypt.hash("Doctor@123", 10);
+  const passwordHash = await bcrypt.hash(env.dashboardPass, 10);
   await User.insertMany([
     {
-      email: "doctor@mukhijaskinclinic.com",
+      email: env.dashboardEmail,
       passwordHash,
       role: "admin",
       doctorId: null,
@@ -60,7 +65,6 @@ async function seed() {
     { name: "Vitiligo Consultation", slug: "vitiligo-consultation", description: "Medical dermatology consultation for vitiligo.", durationMinutes: 30, sortOrder: 8 },
   ]);
 
-  // Mon–Sat: 12:00–15:00 and 16:00–18:00 (clinic consultation windows)
   const windows = [
     { startTime: "12:00", endTime: "15:00", slotMinutes: 30 },
     { startTime: "16:00", endTime: "18:00", slotMinutes: 30 },
@@ -88,7 +92,7 @@ async function seed() {
 
   console.log("Seed complete.");
   console.log(`Doctors: ${doctors.length}, Services: ${services.length}`);
-  console.log("Login: doctor@mukhijaskinclinic.com / Doctor@123");
+  console.log(`Login: ${env.dashboardEmail} / (DASHBOARD_PASS from server/.env)`);
   console.log("After login, select Dr. R. D. Mukhija or Dr. Gaurav Mukhija in the dashboard.");
   process.exit(0);
 }
