@@ -38,7 +38,7 @@ npm run dev
 
 | Email | Password |
 | --- | --- |
-| doctor@mukhijaskinclinic.com | Doctor@123 |
+| doctor@mukhijaskinclinic.com | value of `DASHBOARD_PASS` in `server/.env` |
 
 After login, choose **Dr. R. D. Mukhija** or **Dr. Gaurav Mukhija**. You can switch doctors anytime from the dashboard dropdown.
 
