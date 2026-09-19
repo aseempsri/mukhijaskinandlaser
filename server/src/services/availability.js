@@ -16,6 +16,7 @@ export async function getAvailableSlots({
   date,
   durationMinutes = 30,
   excludeAppointmentId = null,
+  includePast = false,
 }) {
   const appointmentDate = parseDateOnly(date);
   const dow = dayOfWeekUtc(appointmentDate);
@@ -59,8 +60,13 @@ export async function getAvailableSlots({
       const endLabel = `${String(Math.floor((cursor + durationMinutes) / 60)).padStart(2, "0")}:${String((cursor + durationMinutes) % 60).padStart(2, "0")}`;
       const overlaps = taken.some((t) => cursor < t.end && cursor + durationMinutes > t.start);
       const past = isPastDateTime(appointmentDate, startLabel);
-      if (!overlaps && !past) {
-        slots.push({ startTime: startLabel, endTime: endLabel });
+      if (!overlaps && (!past || includePast)) {
+        slots.push({
+          startTime: startLabel,
+          endTime: endLabel,
+          past: Boolean(past),
+          available: !past,
+        });
       }
       cursor += slotSize;
     }

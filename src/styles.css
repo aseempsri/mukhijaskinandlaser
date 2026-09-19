@@ -309,6 +309,7 @@ section { padding: 96px 0; }
   line-height: 1.45;
 }
 .lede { max-width: 750px; font-size: 1.05rem; }
+.br-mobile-only { display: none; }
 .cat-filter { position: sticky; z-index: 5; top: 82px; display: flex; margin: -20px 0 50px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(250,246,239,.94); backdrop-filter: blur(12px); gap: 8px; }
 .cat-pill { padding: 9px 14px; border: 1px solid var(--line); border-radius: 100px; background: transparent; color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; }
 .cat-pill.active { border-color: var(--forest); background: var(--forest); color: white; }
@@ -361,11 +362,15 @@ section { padding: 96px 0; }
 
 @media (max-width: 760px) {
   body { padding-bottom: 72px; }
+  .br-mobile-only { display: block; }
   .appointment-form .hero-ctas {
     margin-top: 22px;
     margin-bottom: 12px;
     position: relative;
     z-index: 1;
+  }
+  .slot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   section { padding: 70px 0; }
   .wrap, .wrap-narrow { width: min(100% - 30px, 1180px); }
@@ -570,11 +575,13 @@ section { padding: 96px 0; }
   font-weight: 600;
 }
 .slot-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+  width: 100%;
 }
 .slot-chip {
+  width: 100%;
   min-height: 42px;
   padding: 0 14px;
   border: 1px solid var(--line);
@@ -587,10 +594,18 @@ section { padding: 96px 0; }
   cursor: pointer;
 }
 .slot-chip.active,
-.slot-chip:hover {
+.slot-chip:hover:not(:disabled) {
   border-color: var(--forest);
   background: var(--forest);
   color: var(--ivory);
+}
+.slot-chip-disabled,
+.slot-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--ink-soft);
+  text-decoration: line-through;
 }
 
 .doctor-shell .page-hero {

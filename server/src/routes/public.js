@@ -88,6 +88,10 @@ router.get("/appointments/available-slots", async (req, res, next) => {
       doctorId: z.string().min(1),
       date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       serviceId: z.string().optional(),
+      excludeAppointmentId: z.string().optional(),
+      includePast: z
+        .union([z.literal("1"), z.literal("true"), z.literal("0"), z.literal("false")])
+        .optional(),
     });
     const query = schema.parse(req.query);
     let durationMinutes = 30;
@@ -95,10 +99,13 @@ router.get("/appointments/available-slots", async (req, res, next) => {
       const service = await Service.findById(query.serviceId);
       if (service) durationMinutes = service.durationMinutes;
     }
+    const includePast = query.includePast === "1" || query.includePast === "true";
     const slots = await getAvailableSlots({
       doctorId: query.doctorId,
       date: query.date,
       durationMinutes,
+      excludeAppointmentId: query.excludeAppointmentId || null,
+      includePast,
     });
     res.json({ success: true, date: query.date, slots });
   } catch (error) {

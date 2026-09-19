@@ -302,7 +302,7 @@ export const NotificationService = {
       sendFn: async () => ({ provider: "dashboard", ok: true }),
     });
 
-    if (patient.email && patient.emailOptIn) {
+    if (patient.email) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -314,7 +314,7 @@ export const NotificationService = {
         sendFn: () => sendEmail({ to: patient.email, subject: `Request received — ${summary.number}`, body: patientBody }),
       });
     }
-    if (patient.whatsappOptIn) {
+    if (patient.phone) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -344,7 +344,7 @@ export const NotificationService = {
     const dateLabel = formatWhatsAppDate(appointment.appointmentDate);
     const timeLabel = formatWhatsAppTime(appointment.startTime);
     const body = `Dear ${patient.fullName},\n\nYour appointment ${appointment.appointmentNumber} for ${service.name} with ${doctor.name} on ${dateLabel} at ${timeLabel} is APPROVED.\n\nWe look forward to seeing you at ${env.clinicName}.\nPhone: +91-9554220700`;
-    if (patient.email && patient.emailOptIn) {
+    if (patient.email) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -356,7 +356,7 @@ export const NotificationService = {
         sendFn: () => sendEmail({ to: patient.email, subject: `Appointment approved — ${appointment.appointmentNumber}`, body }),
       });
     }
-    if (patient.whatsappOptIn) {
+    if (patient.phone) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -387,7 +387,7 @@ export const NotificationService = {
     const timeLabel = formatWhatsAppTime(appointment.startTime);
     const serviceName = service?.name || "your consultation";
     const body = `Dear ${patient.fullName},\n\nYour appointment request ${appointment.appointmentNumber} could not be approved.${reason ? ` Reason: ${reason}` : ""}\n\nPlease call the clinic at +91-9554220700 to choose another slot.\n\n${env.clinicName}`;
-    if (patient.email && patient.emailOptIn) {
+    if (patient.email) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -399,7 +399,7 @@ export const NotificationService = {
         sendFn: () => sendEmail({ to: patient.email, subject: `Appointment update — ${appointment.appointmentNumber}`, body }),
       });
     }
-    if (patient.whatsappOptIn) {
+    if (patient.phone) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -428,8 +428,13 @@ export const NotificationService = {
   async sendAppointmentRescheduled({ appointment, patient, proposedDate, proposedTime, reason }) {
     const dateLabel = formatWhatsAppDate(proposedDate);
     const timeLabel = formatWhatsAppTime(proposedTime);
-    const body = `Dear ${patient.fullName},\n\nPlease consider a new time for ${appointment.appointmentNumber}: ${dateLabel} at ${timeLabel}.${reason ? ` Note: ${reason}` : ""}\n\nReply via phone/WhatsApp at +91-9554220700 to confirm.\n\n${env.clinicName}`;
-    if (patient.email && patient.emailOptIn) {
+    const statusUrl = appointment.publicToken
+      ? `${env.appUrl.replace(/\/$/, "")}/appointment-status/${appointment.publicToken}/`
+      : env.appUrl;
+    const body = `Dear ${patient.fullName},\n\nPlease consider a new time for ${appointment.appointmentNumber}: ${dateLabel} at ${timeLabel}.${reason ? ` Note: ${reason}` : ""}\n\nAccept or decline here: ${statusUrl}\n\nOr reply via phone/WhatsApp at +91-9554220700.\n\n${env.clinicName}`;
+
+    const patientEmail = String(patient?.email || "").trim();
+    if (patientEmail) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -438,10 +443,41 @@ export const NotificationService = {
         eventType: "APPOINTMENT_RESCHEDULE_REQUESTED",
         subject: `Reschedule suggested — ${appointment.appointmentNumber}`,
         body,
-        sendFn: () => sendEmail({ to: patient.email, subject: `Reschedule suggested — ${appointment.appointmentNumber}`, body }),
+        sendFn: () =>
+          sendEmail({
+            to: patientEmail,
+            subject: `Reschedule suggested — ${appointment.appointmentNumber}`,
+            body,
+          }),
+      });
+    } else {
+      console.warn(
+        `[email skip] reschedule ${appointment.appointmentNumber}: patient has no email on file`
+      );
+    }
+
+    // Clinic inbox copy so staff can confirm the proposal was sent.
+    const doctorDoc = appointment.doctorId?.email ? appointment.doctorId : null;
+    for (const to of doctorEmailRecipients(doctorDoc)) {
+      const staffBody = `Reschedule proposed for ${appointment.appointmentNumber}\nPatient: ${patient.fullName}\nPhone: ${patient.phone}\nNew time: ${dateLabel} at ${timeLabel}\nPatient email: ${patientEmail || "(none)"}\nStatus link: ${statusUrl}`;
+      await recordAndSend({
+        appointmentId: appointment._id,
+        recipientType: "doctor",
+        recipientId: appointment.doctorId?._id || appointment.doctorId || patient._id,
+        channel: "email",
+        eventType: "APPOINTMENT_RESCHEDULE_REQUESTED",
+        subject: `Reschedule proposed — ${appointment.appointmentNumber}`,
+        body: staffBody,
+        sendFn: () =>
+          sendEmail({
+            to,
+            subject: `Reschedule proposed — ${appointment.appointmentNumber}`,
+            body: staffBody,
+          }),
       });
     }
-    if (patient.whatsappOptIn) {
+
+    if (patient.phone) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -469,7 +505,7 @@ export const NotificationService = {
   async sendAppointmentCancelled({ appointment, patient, doctor, reason, cancelledBy }) {
     const body = `Dear ${patient.fullName},\n\nYour appointment ${appointment.appointmentNumber} scheduled for ${appointment.appointmentDate.toISOString().slice(0, 10)} at ${appointment.startTime} has been cancelled.${reason ? `\n\nReason: ${reason}` : ""}\n\nFor any questions, contact us at +91-9554220700.\n\n${env.clinicName}`;
     
-    if (patient.email && patient.emailOptIn) {
+    if (patient.email) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -481,7 +517,7 @@ export const NotificationService = {
         sendFn: () => sendEmail({ to: patient.email, subject: `Appointment cancelled — ${appointment.appointmentNumber}`, body }),
       });
     }
-    if (patient.whatsappOptIn) {
+    if (patient.phone) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -525,7 +561,7 @@ export const NotificationService = {
     const reminderLabel = hoursBeforeType === "24h" ? "tomorrow" : "in 2 hours";
     const body = `Dear ${patient.fullName},\n\nReminder: Your appointment ${appointment.appointmentNumber} for ${service.name} with ${doctor.name} is ${reminderLabel}.\n\nDate: ${appointment.appointmentDate.toISOString().slice(0, 10)}\nTime: ${appointment.startTime}\n\nAddress: ${env.clinicAddress || "Mukhija Skin & Laser Clinic, Gorakhpur"}\n\nSee you soon!\n${env.clinicName}\nPhone: +91-9554220700`;
     
-    if (patient.email && patient.emailOptIn) {
+    if (patient.email) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",
@@ -537,7 +573,7 @@ export const NotificationService = {
         sendFn: () => sendEmail({ to: patient.email, subject: `Appointment reminder — ${appointment.appointmentNumber}`, body }),
       });
     }
-    if (patient.whatsappOptIn) {
+    if (patient.phone) {
       await recordAndSend({
         appointmentId: appointment._id,
         recipientType: "patient",

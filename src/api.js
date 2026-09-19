@@ -64,9 +64,11 @@ export const api = {
   health: () => request("/health"),
   getServices: () => request("/services"),
   getDoctors: () => request("/doctors"),
-  getAvailableSlots: ({ doctorId, date, serviceId }) => {
+  getAvailableSlots: ({ doctorId, date, serviceId, excludeAppointmentId, includePast }) => {
     const params = new URLSearchParams({ doctorId, date });
     if (serviceId) params.set("serviceId", serviceId);
+    if (excludeAppointmentId) params.set("excludeAppointmentId", excludeAppointmentId);
+    if (includePast) params.set("includePast", "1");
     return request(`/appointments/available-slots?${params}`);
   },
   createAppointment: (payload, files = []) => {

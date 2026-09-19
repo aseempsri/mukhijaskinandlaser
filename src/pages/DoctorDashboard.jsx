@@ -104,7 +104,9 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
   const [notes, setNotes] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [rescheduleDate, setRescheduleDate] = useState("");
-  const [rescheduleTime, setRescheduleTime] = useState("12:00");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [rescheduleSlots, setRescheduleSlots] = useState([]);
+  const [loadingRescheduleSlots, setLoadingRescheduleSlots] = useState(false);
   const [imageUrls, setImageUrls] = useState([]);
 
   const load = async () => {
@@ -114,7 +116,7 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
       setData(result);
       setNotes(result.appointment.doctorNotes || "");
       setRescheduleDate(String(result.appointment.appointmentDate).slice(0, 10));
-      setRescheduleTime(result.appointment.startTime);
+      setRescheduleTime(result.appointment.startTime || "");
     } catch (err) {
       setError(err.message);
     }
@@ -123,6 +125,48 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
   useEffect(() => {
     load();
   }, [appointmentId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const appointment = data?.appointment;
+      if (!appointment || !rescheduleDate) {
+        setRescheduleSlots([]);
+        return;
+      }
+      const doctorId = appointment.doctorId?._id || appointment.doctorId;
+      const serviceId = appointment.serviceId?._id || appointment.serviceId;
+      if (!doctorId) return;
+      setLoadingRescheduleSlots(true);
+      try {
+        const result = await api.getAvailableSlots({
+          doctorId: String(doctorId),
+          date: rescheduleDate,
+          serviceId: serviceId ? String(serviceId) : undefined,
+          excludeAppointmentId: appointmentId,
+          includePast: true,
+        });
+        if (cancelled) return;
+        const slots = result.slots || [];
+        setRescheduleSlots(slots);
+        setRescheduleTime((current) => {
+          const stillOk = slots.some((slot) => slot.startTime === current && !slot.past);
+          return stillOk ? current : "";
+        });
+      } catch (err) {
+        if (!cancelled) {
+          setRescheduleSlots([]);
+          setError(err.message);
+        }
+      } finally {
+        if (!cancelled) setLoadingRescheduleSlots(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [data?.appointment, rescheduleDate, appointmentId]);
 
   useEffect(() => {
     let revoked = [];
@@ -298,10 +342,31 @@ function DetailPanel({ appointmentId, onBack, onChanged }) {
               Propose new date
               <input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} />
             </label>
-            <label>
-              Propose new time
-              <input type="time" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} />
-            </label>
+            <div className="full">
+              <span className="slot-label">Available times</span>
+              {loadingRescheduleSlots ? <p className="dash-muted">Loading slots…</p> : null}
+              {!loadingRescheduleSlots && !rescheduleSlots.length ? (
+                <p className="form-error">No open slots on this date. Try another day.</p>
+              ) : null}
+              <div className="slot-grid">
+                {rescheduleSlots.map((slot) => {
+                  const disabled = Boolean(slot.past);
+                  const active = rescheduleTime === slot.startTime && !disabled;
+                  return (
+                    <button
+                      key={`${slot.startTime}-${slot.endTime}`}
+                      type="button"
+                      className={`slot-chip ${active ? "active" : ""} ${disabled ? "slot-chip-disabled" : ""}`}
+                      disabled={disabled || busy}
+                      onClick={() => setRescheduleTime(slot.startTime)}
+                      title={disabled ? "This time has already passed" : undefined}
+                    >
+                      {slot.startTime}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="full">
               <button
                 type="button"

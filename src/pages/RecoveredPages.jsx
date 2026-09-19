@@ -649,6 +649,14 @@ export function BookAppointmentPage() {
     }));
   };
 
+  const hasStep4Details =
+    Boolean(form.primaryConcern.trim()) ||
+    Boolean(form.duration.trim()) ||
+    form.previousTreatment ||
+    Boolean(form.previousTreatmentDetails.trim()) ||
+    Boolean(form.additionalNotes.trim()) ||
+    photos.length > 0;
+
   const validateStep = (currentStep) => {
     if (currentStep === 1) {
       if (!form.serviceId || !form.doctorId) return "Please choose a service and doctor.";
@@ -660,8 +668,9 @@ export function BookAppointmentPage() {
       if (!form.fullName.trim() || !form.phone.trim()) return "Full name and phone are required.";
     }
     if (currentStep === 4) {
-      if (!form.primaryConcern.trim()) return "Please describe your primary concern.";
-      if (!form.consent) return "Consent is required to submit an appointment request.";
+      if (hasStep4Details && !form.consent) {
+        return "Consent is required when you share clinical details or photos.";
+      }
     }
     return "";
   };
@@ -727,7 +736,19 @@ export function BookAppointmentPage() {
       <PageHero
         eyebrow="Online appointment request"
         title="Book an Appointment"
-        lede="Consultation windows: Monday–Saturday, 12 PM–03 PM and 04 PM–06 PM. Submitting this form creates a request — your dermatologist confirms the appointment."
+        lede={
+          <>
+            Consultation windows:
+            <br />
+            <strong>
+              Monday–Saturday,
+              <br className="br-mobile-only" />
+              {" "}12 PM–03 PM and 04 PM–06 PM.
+            </strong>
+            <br />
+            Submitting this form creates a request — your dermatologist confirms the appointment.
+          </>
+        }
       />
       <section style={{ paddingTop: 0 }}>
         <div className="wrap wrap-narrow">
@@ -841,11 +862,11 @@ export function BookAppointmentPage() {
               {step === 4 && (
                 <div className="form-grid">
                   <label className="full">
-                    Primary concern
-                    <textarea required rows={3} value={form.primaryConcern} onChange={update("primaryConcern")} />
+                    Primary concern <span className="optional-hint">(optional)</span>
+                    <textarea rows={3} value={form.primaryConcern} onChange={update("primaryConcern")} />
                   </label>
                   <label>
-                    How long has this been present?
+                    How long has this been present? <span className="optional-hint">(optional)</span>
                     <input value={form.duration} onChange={update("duration")} placeholder="e.g. 3 months" />
                   </label>
                   <label className="checkbox-row">
@@ -854,7 +875,7 @@ export function BookAppointmentPage() {
                   </label>
                   {form.previousTreatment ? (
                     <label className="full">
-                      Previous treatment details
+                      Previous treatment details <span className="optional-hint">(optional)</span>
                       <textarea rows={2} value={form.previousTreatmentDetails} onChange={update("previousTreatmentDetails")} />
                     </label>
                   ) : null}
@@ -871,10 +892,16 @@ export function BookAppointmentPage() {
                       onChange={(event) => setPhotos([...event.target.files].slice(0, 5))}
                     />
                   </label>
-                  <label className="full checkbox-row">
-                    <input type="checkbox" required checked={form.consent} onChange={update("consent")} />
-                    I consent to Mukhija Skin &amp; Laser Clinic storing my details and optional photos to process this appointment request.
-                  </label>
+                  {hasStep4Details ? (
+                    <label className="full checkbox-row">
+                      <input type="checkbox" required checked={form.consent} onChange={update("consent")} />
+                      <span>
+                        I consent to Mukhija Skin &amp; Laser Clinic storing my details
+                        {photos.length > 0 ? " and optional photos" : ""}
+                        {" "}to process this appointment request.
+                      </span>
+                    </label>
+                  ) : null}
                 </div>
               )}
 
