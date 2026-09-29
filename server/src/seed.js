@@ -26,7 +26,7 @@ async function seed() {
     {
       name: "Dr. R. D. Mukhija",
       title: "Founder · Senior Dermatologist",
-      email: "rd.mukhija@mukhijaskinclinic.com",
+      email: "rd.mukhija@drmukhijaskinclinic.com",
       phone: "+919554220700",
       whatsappNumber: "+919554220700",
       timezone: "Asia/Kolkata",
@@ -35,7 +35,7 @@ async function seed() {
     {
       name: "Dr. Gaurav Mukhija",
       title: "Dermatologist · Cosmetic & Laser Specialist",
-      email: "gaurav.mukhija@mukhijaskinclinic.com",
+      email: "gaurav.mukhija@drmukhijaskinclinic.com",
       phone: "+919554220700",
       whatsappNumber: "+919554220700",
       timezone: "Asia/Kolkata",

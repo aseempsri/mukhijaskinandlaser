@@ -23,10 +23,14 @@ import { FACEBOOK_URL, INSTAGRAM_URL } from "./social";
 
 const IMAGE = absoluteAssetUrl("og-image.png");
 const LOGO = assetUrl("logo.png");
+const LEGAL_ENTITY = "MUKHIJA MEDICARE PRIVATE LIMITED";
+
 const clinicSchema = {
   "@context": "https://schema.org",
   "@type": "MedicalClinic",
   name: "Mukhija Skin & Laser Clinic",
+  alternateName: LEGAL_ENTITY,
+  legalName: LEGAL_ENTITY,
   image: absoluteAssetUrl("og-image.png"),
   logo: absoluteAssetUrl("logo.png"),
   telephone: "+91-9554220700",
@@ -54,8 +58,14 @@ const clinicSchema = {
     },
   ],
   medicalSpecialty: "Dermatology",
-  url: "https://www.mukhijaskinclinic.com/",
+  url: "https://drmukhijaskinclinic.com/",
   sameAs: [INSTAGRAM_URL, FACEBOOK_URL],
+  parentOrganization: {
+    "@type": "Organization",
+    name: LEGAL_ENTITY,
+    legalName: LEGAL_ENTITY,
+    url: "https://drmukhijaskinclinic.com/",
+  },
 };
 
 function normalizeContentUrls(html) {
@@ -279,7 +289,7 @@ function setMeta(selector, attribute, value) {
 function useSeo(page) {
   useEffect(() => {
     document.title = page.title;
-    const canonical = `https://www.mukhijaskinclinic.com${page.canonical}`;
+    const canonical = `https://drmukhijaskinclinic.com${page.canonical}`;
     setMeta('meta[name="description"]', "content", page.description);
     setMeta('meta[property="og:type"]', "content", "website");
     setMeta('meta[property="og:title"]', "content", page.title);
@@ -291,6 +301,9 @@ function useSeo(page) {
     setMeta('meta[property="og:image:height"]', "content", "630");
     setMeta('meta[property="og:image:alt"]', "content", "Mukhija Skin & Laser Clinic logo");
     setMeta('meta[property="og:site_name"]', "content", "Mukhija Skin & Laser Clinic");
+    setMeta('meta[name="application-name"]', "content", "Mukhija Skin & Laser Clinic");
+    setMeta('meta[name="legalName"]', "content", LEGAL_ENTITY);
+    setMeta('meta[name="organization"]', "content", LEGAL_ENTITY);
     setMeta('meta[name="twitter:card"]', "content", "summary_large_image");
     setMeta('meta[name="twitter:image"]', "content", IMAGE);
     setMeta('link[rel="canonical"]', "href", canonical);
@@ -617,7 +630,13 @@ function Footer() {
             <div className="foot-col"><h4>Treatments</h4><ul><li><a href={withBase("/acne-scar-treatment-gorakhpur/")}>Acne Scar Treatment</a></li><li><a href={withBase("/open-pores-treatment-gorakhpur/")}>Open Pores Treatment</a></li><li><a href={withBase("/treatments/#hair")}>Hair Fall &amp; PRP</a></li><li><a href={withBase("/treatments/")}>View All Treatments</a></li></ul></div>
             <div className="foot-col"><h4>Patient Info</h4><ul><li><a href={withBase("/book-appointment/")}>Book Appointment</a></li><li><a href={withBase("/before-after/")}>Before &amp; After</a></li><li><a href={withBase("/contact-us/")}>Contact &amp; Directions</a></li><li><a href={withBase("/contact-us/#hours")}>Clinic Hours</a></li></ul></div>
           </div>
-          <div className="foot-bottom"><span>© 2026 Mukhija Skin &amp; Laser Clinic. All rights reserved.</span><div className="legal"><a href={withBase("/privacy-policy/")}>Privacy Policy</a><a href={withBase("/terms/")}>Terms</a><a href={withBase("/medical-disclaimer/")}>Medical Disclaimer</a></div></div>
+          <div className="foot-bottom">
+            <div className="foot-copyright">
+              <span>© 2026 Mukhija Skin &amp; Laser Clinic. All rights reserved.</span>
+              <span className="footer-legal-entity" itemProp="legalName">{LEGAL_ENTITY}</span>
+            </div>
+            <div className="legal"><a href={withBase("/privacy-policy/")}>Privacy Policy</a><a href={withBase("/terms/")}>Terms</a><a href={withBase("/medical-disclaimer/")}>Medical Disclaimer</a></div>
+          </div>
         </div>
       </footer>
       <div className="desktop-float"><a href="https://wa.me/919554220700" className="wa" aria-label="Chat on WhatsApp" target="_blank" rel="noopener noreferrer">✆</a><a href={withBase("/book-appointment/")} aria-label="Book an appointment">▣</a></div>

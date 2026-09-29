@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.mukhijaskinclinic.com/sitemap.xml
+Sitemap: https://drmukhijaskinclinic.com/sitemap.xml

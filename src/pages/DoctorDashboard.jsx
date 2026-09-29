@@ -25,7 +25,7 @@ function StatusPill({ status }) {
 }
 
 function LoginPanel({ onSuccess }) {
-  const [email, setEmail] = useState("doctor@mukhijaskinclinic.com");
+  const [email, setEmail] = useState("doctor@drmukhijaskinclinic.com");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);

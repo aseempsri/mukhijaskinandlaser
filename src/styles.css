@@ -332,6 +332,8 @@ section { padding: 96px 0; }
 .foot-col ul { display: grid; margin: 0; padding: 0; gap: 8px; list-style: none; color: rgba(250,246,239,.58); font-size: 0.75rem; }
 .foot-col a:hover, .legal a:hover { color: white; }
 .foot-bottom { display: flex; margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.12); justify-content: space-between; color: rgba(250,246,239,.45); font-size: 0.68rem; }
+.foot-copyright { display: grid; gap: 4px; }
+.footer-legal-entity { color: rgba(250,246,239,.32); font-size: 0.62rem; letter-spacing: 0.02em; }
 .legal { display: flex; gap: 18px; }
 .desktop-float { position: fixed; z-index: 30; right: 18px; bottom: 18px; display: grid; overflow: hidden; border-radius: 100px; box-shadow: var(--shadow); }
 .desktop-float a { display: grid; width: 48px; height: 48px; background: var(--forest); color: white; place-items: center; }

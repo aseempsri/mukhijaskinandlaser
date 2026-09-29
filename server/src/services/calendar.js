@@ -97,7 +97,7 @@ export function appointmentCalendarPayload(appointment, { patient, doctor, servi
       endTime: appointment.endTime,
     }),
     ics: buildIcsEvent({
-      uid: `${appointment.appointmentNumber}@mukhijaskinclinic.com`,
+      uid: `${appointment.appointmentNumber}@drmukhijaskinclinic.com`,
       title,
       description,
       location: env.clinicAddress,

@@ -32,12 +32,12 @@ NEW -> /terms/
 NEW -> /medical-disclaimer/
 ```
 
-## Legacy links that were already broken on mukhijaskinclinic.com (not introduced by this redesign)
+## Legacy links that were already broken on the previous WordPress site (not introduced by this redesign)
 
-The current live site's nav menu links many treatments (Acne Surgery, Laser Hair Removal, Melasma
+The previous site's nav menu linked many treatments (Acne Surgery, Laser Hair Removal, Melasma
 Treatment, Mole Removal, Psoriasis Treatment, Tattoo Removal, Vitiligo Treatment, Wrinkles Treatment,
-and others) to `https://www.mukhijaskinclinic.com/` — i.e. they silently fall back to the homepage
-rather than a dedicated page. These are **pre-existing gaps**, not pages this redesign is deleting.
+and others) to the homepage — i.e. they silently fell back rather than opening a dedicated page.
+These are **pre-existing gaps**, not pages this redesign is deleting.
 Each should get a real URL and a genuine 301 from nowhere (since nothing worked before), for example:
 
 ```
@@ -53,7 +53,6 @@ Each should get a real URL and a genuine 301 from nowhere (since nothing worked 
 
 ## Action before launch
 
-Before deploying, re-crawl `mukhijaskinclinic.com` one URL at a time (a proper crawler, not manual
-fetches) to get a complete, verified list of every currently-resolving legacy URL, and diff it against
-this table. Do not go live until every legacy URL in that crawl either (a) resolves unchanged, or
-(b) has an explicit 301 target in this file.
+Before deploying, crawl every legacy path that still needs a 301 and diff it against this table.
+Do not go live until every legacy URL either (a) resolves unchanged on
+`https://drmukhijaskinclinic.com`, or (b) has an explicit 301 target in this file.

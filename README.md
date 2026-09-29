@@ -62,12 +62,12 @@ template that needs actual legal review before publishing.
 ## What's in this build
 
 
-A static, production-styled prototype of the redesign, built from real content pulled
-from `mukhijaskinclinic.com` (name, address, phone, email, hours, doctor credentials,
-machine list, and the full text of the Acne Scar and Open Pores treatment pages).
-No medical claims, numbers, or credentials were invented — anything not explicitly on
-the current site (prices, exact success rates, extra awards) was left out rather than
-guessed.
+A static, production-styled prototype of the redesign, built from real clinic content
+(name, address, phone, email, hours, doctor credentials, machine list, and the full
+text of the Acne Scar and Open Pores treatment pages). Canonical site:
+`https://drmukhijaskinclinic.com`. No medical claims, numbers, or credentials were
+invented — anything not explicitly confirmed (prices, exact success rates, extra awards)
+was left out rather than guessed.
 
 **Pages included** (open `index.html` in a browser to start):
 

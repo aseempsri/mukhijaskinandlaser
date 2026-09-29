@@ -11,7 +11,7 @@ export const env = {
   appUrl: process.env.APP_URL || "http://localhost:5173",
   mongoUri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/mukhija_clinic",
   authSecret: process.env.AUTH_SECRET || "dev-secret",
-  dashboardEmail: (process.env.DASHBOARD_EMAIL || "doctor@mukhijaskinclinic.com").toLowerCase(),
+  dashboardEmail: (process.env.DASHBOARD_EMAIL || "doctor@drmukhijaskinclinic.com").toLowerCase(),
   dashboardPass: process.env.DASHBOARD_PASS || "",
   clinicTimezone: process.env.CLINIC_TIMEZONE || "Asia/Kolkata",
   clinicName: process.env.CLINIC_NAME || "Mukhija Skin & Laser Clinic",
